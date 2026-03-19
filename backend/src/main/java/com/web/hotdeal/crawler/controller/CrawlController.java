@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Validated
-@RestController
-@RequestMapping("/api/admin")
+// @RestController
+// @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @Tag(name = "Crawl Admin", description = "크롤링 실행/이력 조회 API")
 public class CrawlController {

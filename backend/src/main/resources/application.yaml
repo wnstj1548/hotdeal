@@ -6,6 +6,14 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:1234}
     driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+  cache:
+    type: redis
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -29,6 +37,18 @@ app:
     incremental-enabled: ${CRAWLER_INCREMENTAL_ENABLED:true}
     incremental-overlap-minutes: ${CRAWLER_INCREMENTAL_OVERLAP_MINUTES:20}
     incremental-min-refresh-count: ${CRAWLER_INCREMENTAL_MIN_REFRESH_COUNT:20}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    fail-open: ${RATE_LIMIT_FAIL_OPEN:true}
+    redis-key-prefix: ${RATE_LIMIT_REDIS_KEY_PREFIX:rate-limit}
+    public-api:
+      capacity: ${RATE_LIMIT_PUBLIC_CAPACITY:120}
+      refill-tokens: ${RATE_LIMIT_PUBLIC_REFILL_TOKENS:120}
+      refill-seconds: ${RATE_LIMIT_PUBLIC_REFILL_SECONDS:60}
+    admin-api:
+      capacity: ${RATE_LIMIT_ADMIN_CAPACITY:20}
+      refill-tokens: ${RATE_LIMIT_ADMIN_REFILL_TOKENS:20}
+      refill-seconds: ${RATE_LIMIT_ADMIN_REFILL_SECONDS:60}
 
 logging:
   level:

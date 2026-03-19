@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotdeal-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/hotdeal
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DATABASE: 0
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_FAIL_OPEN: "false"
+      RATE_LIMIT_PUBLIC_CAPACITY: 120
+      RATE_LIMIT_PUBLIC_REFILL_TOKENS: 120
+      RATE_LIMIT_PUBLIC_REFILL_SECONDS: 60
+      RATE_LIMIT_ADMIN_CAPACITY: 20
+      RATE_LIMIT_ADMIN_REFILL_TOKENS: 20
+      RATE_LIMIT_ADMIN_REFILL_SECONDS: 60
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    container_name: hotdeal-postgres
+    environment:
+      POSTGRES_DB: hotdeal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hotdeal"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:8
+    container_name: hotdeal-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

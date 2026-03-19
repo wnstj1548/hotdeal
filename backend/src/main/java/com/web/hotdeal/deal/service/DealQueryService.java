@@ -1,5 +1,6 @@
 package com.web.hotdeal.deal.service;
 
+import com.web.hotdeal.commons.config.RedisCacheConfig;
 import com.web.hotdeal.deal.dto.request.DealSearchRequest;
 import com.web.hotdeal.deal.dto.request.PopularDealRequest;
 import com.web.hotdeal.deal.dto.response.DealItemResponse;
@@ -9,6 +10,7 @@ import com.web.hotdeal.deal.model.Deal;
 import com.web.hotdeal.deal.model.DealSource;
 import com.web.hotdeal.deal.repository.DealRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,6 +33,7 @@ public class DealQueryService {
 
     private final DealRepository dealRepository;
 
+    @Cacheable(cacheNames = RedisCacheConfig.DEAL_PAGE_CACHE, key = "T(java.lang.String).valueOf(#request)", sync = true)
     public DealPageResponse getDeals(DealSearchRequest request) {
         int requestedSize = request.size() == null ? DEFAULT_SIZE : request.size();
         int requestedPage = request.page() == null ? DEFAULT_PAGE : request.page();
@@ -43,12 +46,14 @@ public class DealQueryService {
         return DealPageResponse.from(dealPage);
     }
 
+    @Cacheable(cacheNames = RedisCacheConfig.SOURCE_SUMMARY_CACHE, sync = true)
     public List<SourceSummaryResponse> getSourceSummary() {
         return Arrays.stream(DealSource.values())
                 .map(source -> SourceSummaryResponse.from(source, dealRepository.countBySourceType(source)))
                 .toList();
     }
 
+    @Cacheable(cacheNames = RedisCacheConfig.POPULAR_DEALS_CACHE, key = "T(java.lang.String).valueOf(#request)", sync = true)
     public List<DealItemResponse> getPopularDeals(PopularDealRequest request) {
         int requestedLimit = request.limit() == null ? DEFAULT_POPULAR_LIMIT : request.limit();
         int safeLimit = Math.min(Math.max(requestedLimit, 1), MAX_POPULAR_LIMIT);

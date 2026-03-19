@@ -4,6 +4,7 @@ import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.model.CrawlSourceRun;
 import com.web.hotdeal.crawler.model.CrawlRunResult;
 import com.web.hotdeal.deal.model.DealSource;
+import com.web.hotdeal.deal.service.DealCacheService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 public class CrawlCoordinator {
     private final List<DealCrawler> crawlers;
     private final DealIngestionService ingestionService;
+    private final DealCacheService dealCacheService;
 
     public List<CrawlSourceRun> crawlAll() {
         List<CrawlSourceRun> results = new ArrayList<>();
@@ -60,6 +62,9 @@ public class CrawlCoordinator {
 
             log.info("[Crawler:{}] fetched={}, inserted={}, updated={}",
                     crawler.source(), fetched.size(), inserted, updated);
+            if (inserted > 0 || updated > 0) {
+                dealCacheService.evictReadCaches();
+            }
             return new CrawlSourceRun(
                     startedAt,
                     LocalDateTime.now(),

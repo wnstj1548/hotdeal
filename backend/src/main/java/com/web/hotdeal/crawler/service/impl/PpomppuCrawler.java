@@ -3,6 +3,7 @@ package com.web.hotdeal.crawler.service.impl;
 import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
+import com.web.hotdeal.crawler.service.CrawlIncrementalService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.crawler.support.DealTextExtractor;
 import com.web.hotdeal.deal.model.DealSource;
@@ -27,8 +28,8 @@ public class PpomppuCrawler extends AbstractJsoupCrawler {
     private static final DateTimeFormatter YYMMDD_SLASH = DateTimeFormatter.ofPattern("yy/MM/dd");
     private static final DateTimeFormatter HHMMSS = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    public PpomppuCrawler(CrawlerProperties crawlerProperties) {
-        super(crawlerProperties);
+    public PpomppuCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
+        super(crawlerProperties, crawlIncrementalService);
     }
 
     @Override
@@ -39,6 +40,7 @@ public class PpomppuCrawler extends AbstractJsoupCrawler {
     @Override
     public List<CrawledDeal> crawl() {
         Document document = fetch(LIST_URL);
+        LocalDateTime incrementalCutoff = resolveIncrementalCutoff();
         List<CrawledDeal> deals = new ArrayList<>();
 
         for (Element row : document.select("tr.baseList")) {
@@ -64,6 +66,10 @@ public class PpomppuCrawler extends AbstractJsoupCrawler {
             String thumbnailUrl = CrawlerUtils.absoluteUrl(BASE_URL, CrawlerUtils.attr(row.selectFirst("a.baseList-thumb img"), "src"));
             String fullDateText = CrawlerUtils.attr(row.selectFirst("td[title]:has(time.baseList-time)"), "title");
             String shortDateText = CrawlerUtils.text(row.selectFirst("time.baseList-time"));
+            LocalDateTime postedAt = parsePostedAt(fullDateText, shortDateText);
+            if (shouldStopOnIncrementalWindow(incrementalCutoff, postedAt, sourcePostId, deals.size())) {
+                break;
+            }
 
             deals.add(new CrawledDeal(
                     source(),
@@ -75,7 +81,7 @@ public class PpomppuCrawler extends AbstractJsoupCrawler {
                     category,
                     parsedTitle.priceText(),
                     parsedTitle.shippingText(),
-                    parsePostedAt(fullDateText, shortDateText),
+                    postedAt,
                     null,
                     CrawlerUtils.parseCount(CrawlerUtils.text(row.selectFirst("span.baseList-c"))),
                     CrawlerUtils.parseCount(CrawlerUtils.text(row.selectFirst("td.baseList-views"))),

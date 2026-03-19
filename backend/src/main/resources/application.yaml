@@ -26,6 +26,9 @@ app:
     timeout-ms: ${CRAWLER_TIMEOUT_MS:10000}
     max-items-per-source: ${CRAWLER_MAX_ITEMS_PER_SOURCE:60}
     user-agent: ${CRAWLER_USER_AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36}
+    incremental-enabled: ${CRAWLER_INCREMENTAL_ENABLED:true}
+    incremental-overlap-minutes: ${CRAWLER_INCREMENTAL_OVERLAP_MINUTES:20}
+    incremental-min-refresh-count: ${CRAWLER_INCREMENTAL_MIN_REFRESH_COUNT:20}
 
 logging:
   level:

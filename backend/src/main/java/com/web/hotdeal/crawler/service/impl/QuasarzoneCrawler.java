@@ -3,6 +3,7 @@ package com.web.hotdeal.crawler.service.impl;
 import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
+import com.web.hotdeal.crawler.service.CrawlIncrementalService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.deal.model.DealSource;
 import org.jsoup.nodes.Document;
@@ -27,8 +28,8 @@ public class QuasarzoneCrawler extends AbstractJsoupCrawler {
     private static final DateTimeFormatter YYMMDD_DOT = DateTimeFormatter.ofPattern("yy.MM.dd");
     private static final DateTimeFormatter YYYYMMDD_DOT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
-    public QuasarzoneCrawler(CrawlerProperties crawlerProperties) {
-        super(crawlerProperties);
+    public QuasarzoneCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
+        super(crawlerProperties, crawlIncrementalService);
     }
 
     @Override
@@ -39,6 +40,7 @@ public class QuasarzoneCrawler extends AbstractJsoupCrawler {
     @Override
     public List<CrawledDeal> crawl() {
         Document document = fetch(LIST_URL);
+        LocalDateTime incrementalCutoff = resolveIncrementalCutoff();
         List<CrawledDeal> deals = new ArrayList<>();
 
         for (Element row : document.select("div.market-type-list tbody tr")) {
@@ -73,6 +75,11 @@ public class QuasarzoneCrawler extends AbstractJsoupCrawler {
             Boolean ended = labelText != null && (labelText.contains("종료") || labelText.contains("마감"));
             Boolean hot = labelText != null && (labelText.contains("인기") || labelText.contains("HOT"));
 
+            LocalDateTime postedAt = parsePostedAt(CrawlerUtils.text(row.selectFirst("span.date")));
+            if (shouldStopOnIncrementalWindow(incrementalCutoff, postedAt, sourcePostId, deals.size())) {
+                break;
+            }
+
             deals.add(new CrawledDeal(
                     source(),
                     sourcePostId,
@@ -83,7 +90,7 @@ public class QuasarzoneCrawler extends AbstractJsoupCrawler {
                     category,
                     priceText,
                     shippingText,
-                    parsePostedAt(CrawlerUtils.text(row.selectFirst("span.date"))),
+                    postedAt,
                     CrawlerUtils.parseCount(CrawlerUtils.text(row.selectFirst("td .num"))),
                     CrawlerUtils.parseCount(CrawlerUtils.text(row.selectFirst(".board-list-comment .ctn-count"))),
                     CrawlerUtils.parseCount(CrawlerUtils.text(row.selectFirst("span.count"))),

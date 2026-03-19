@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.time.LocalDateTime;
+
 @RequiredArgsConstructor
 public abstract class AbstractJsoupCrawler implements DealCrawler {
     private final CrawlerProperties crawlerProperties;
+    private final CrawlIncrementalService crawlIncrementalService;
 
     protected Document fetch(String url) {
         try {
@@ -24,5 +27,18 @@ public abstract class AbstractJsoupCrawler implements DealCrawler {
 
     protected int maxItems() {
         return crawlerProperties.getMaxItemsPerSource();
+    }
+
+    protected LocalDateTime resolveIncrementalCutoff() {
+        return crawlIncrementalService.resolveCutoff(source());
+    }
+
+    protected boolean shouldStopOnIncrementalWindow(
+            LocalDateTime cutoff,
+            LocalDateTime postedAt,
+            String sourcePostId,
+            int collectedCount
+    ) {
+        return crawlIncrementalService.shouldStop(source(), cutoff, postedAt, sourcePostId, collectedCount);
     }
 }

@@ -16,4 +16,7 @@ public class CrawlerProperties {
     private int timeoutMs = 10_000;
     private int maxItemsPerSource = 60;
     private String userAgent = "Mozilla/5.0";
+    private boolean incrementalEnabled = true;
+    private int incrementalOverlapMinutes = 20;
+    private int incrementalMinRefreshCount = 20;
 }

@@ -3,6 +3,7 @@ package com.web.hotdeal.crawler.service.impl;
 import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
+import com.web.hotdeal.crawler.service.CrawlIncrementalService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.crawler.support.DealTextExtractor;
 import com.web.hotdeal.deal.model.DealSource;
@@ -26,8 +27,8 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
     private static final Pattern ID_PATTERN = Pattern.compile("^/os/(\\d+)$");
     private static final DateTimeFormatter YYMMDD = DateTimeFormatter.ofPattern("yy.MM.dd");
 
-    public EomisaeCrawler(CrawlerProperties crawlerProperties) {
-        super(crawlerProperties);
+    public EomisaeCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
+        super(crawlerProperties, crawlIncrementalService);
     }
 
     @Override
@@ -38,6 +39,7 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
     @Override
     public List<CrawledDeal> crawl() {
         Document document = fetch(LIST_URL);
+        LocalDateTime incrementalCutoff = resolveIncrementalCutoff();
         List<CrawledDeal> deals = new ArrayList<>();
 
         for (Element item : document.select("div.card_el")) {
@@ -62,6 +64,10 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
             String thumbnailUrl = CrawlerUtils.absoluteUrl(BASE_URL, CrawlerUtils.attr(item.selectFirst("img.tmb"), "src"));
             String category = normalizeCategory(CrawlerUtils.text(item.selectFirst("span.cate")));
             String dateText = parseDateText(item);
+            LocalDateTime postedAt = parsePostedAt(dateText);
+            if (shouldStopOnIncrementalWindow(incrementalCutoff, postedAt, sourcePostId, deals.size())) {
+                break;
+            }
 
             Integer likeCount = extractCounter(item, "ion-ios-heart");
             Integer replyCount = extractCounter(item, "ion-ios-chatbubble");
@@ -77,7 +83,7 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
                     category,
                     parsedTitle.priceText(),
                     parsedTitle.shippingText(),
-                    parsePostedAt(dateText),
+                    postedAt,
                     likeCount,
                     replyCount,
                     viewCount,

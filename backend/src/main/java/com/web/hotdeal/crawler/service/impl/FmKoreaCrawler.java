@@ -9,6 +9,7 @@ import com.microsoft.playwright.options.WaitUntilState;
 import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
+import com.web.hotdeal.crawler.service.CrawlIncrementalService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.deal.model.DealSource;
 import org.jsoup.Jsoup;
@@ -37,8 +38,8 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
     private static final DateTimeFormatter YYMMDD = DateTimeFormatter.ofPattern("yy.MM.dd");
     private final CrawlerProperties crawlerProperties;
 
-    public FmKoreaCrawler(CrawlerProperties crawlerProperties) {
-        super(crawlerProperties);
+    public FmKoreaCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
+        super(crawlerProperties, crawlIncrementalService);
         this.crawlerProperties = crawlerProperties;
     }
 
@@ -50,6 +51,7 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
     @Override
     public List<CrawledDeal> crawl() {
         Document document = fetchWithPlaywright(LIST_URL);
+        LocalDateTime incrementalCutoff = resolveIncrementalCutoff();
         List<CrawledDeal> deals = new ArrayList<>();
 
         for (Element item : document.select("li[class*='li_best2_']")) {
@@ -87,6 +89,9 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
             Integer likeCount = CrawlerUtils.parseCount(CrawlerUtils.text(item.selectFirst("a.pc_voted_count .count")));
             Integer replyCount = CrawlerUtils.parseCount(CrawlerUtils.text(item.selectFirst("span.comment_count")));
             LocalDateTime postedAt = parsePostedAt(CrawlerUtils.text(item.selectFirst("span.regdate")));
+            if (shouldStopOnIncrementalWindow(incrementalCutoff, postedAt, sourcePostId, deals.size())) {
+                break;
+            }
 
             deals.add(new CrawledDeal(
                     source(),

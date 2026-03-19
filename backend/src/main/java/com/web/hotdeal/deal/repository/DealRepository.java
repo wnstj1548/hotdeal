@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface DealRepository extends JpaRepository<Deal, Long>, DealRepositoryCustom {
     Optional<Deal> findBySourceTypeAndSourcePostId(DealSource sourceType, String sourcePostId);
 
+    boolean existsBySourceTypeAndSourcePostId(DealSource sourceType, String sourcePostId);
+
     Page<Deal> findBySourceType(DealSource sourceType, Pageable pageable);
 
     Page<Deal> findByTitleContainingIgnoreCase(String title, Pageable pageable);

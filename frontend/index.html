@@ -3,11 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>핫딜 모아보기</title>
+
+    <title>Hotdeal Hub | Real-time Deals from Korean Communities</title>
+    <meta
+      name="description"
+      content="Find real-time hot deals from Korean communities in one place. Filter by source, category, and price to discover the best offers quickly."
+    />
+    <meta
+      name="keywords"
+      content="hot deal, Korean deals, ppomppu, fm korea, eomisae, quasarzone, deal aggregator"
+    />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <meta name="theme-color" content="#0f172a" />
+
+    <link rel="canonical" href="https://hotdeal-web.vercel.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Hotdeal Hub" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:title" content="Hotdeal Hub | Real-time Deals from Korean Communities" />
+    <meta
+      property="og:description"
+      content="Collect and browse Korean hot deals from multiple communities with smart filters and fast updates."
+    />
+    <meta property="og:url" content="https://hotdeal-web.vercel.app/" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hotdeal Hub | Real-time Deals from Korean Communities" />
+    <meta
+      name="twitter:description"
+      content="Collect and browse Korean hot deals from multiple communities with smart filters and fast updates."
+    />
+
+    <script id="website-schema" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Hotdeal Hub",
+        "url": "https://hotdeal-web.vercel.app/",
+        "inLanguage": "ko-KR",
+        "description": "Find real-time hot deals from Korean communities in one place."
+      }
+    </script>
+
+    <script>
+      (function () {
+        var absolute = window.location.origin + window.location.pathname;
+        var canonical = document.querySelector('link[rel="canonical"]');
+        if (canonical) canonical.setAttribute("href", absolute);
+        var ogUrl = document.querySelector('meta[property="og:url"]');
+        if (ogUrl) ogUrl.setAttribute("content", absolute);
+        var websiteSchema = document.getElementById("website-schema");
+        if (websiteSchema && websiteSchema.textContent) {
+          try {
+            var schema = JSON.parse(websiteSchema.textContent);
+            schema.url = window.location.origin + "/";
+            websiteSchema.textContent = JSON.stringify(schema);
+          } catch (_) {}
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

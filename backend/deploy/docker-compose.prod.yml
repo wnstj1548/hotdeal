@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: hotdeal-backend:latest
+    container_name: hotdeal-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_ADDITIONAL_LOCATION: /app/config/
+    expose:
+      - "8080"
+    volumes:
+      - ../config/application-prod.yml:/app/config/application-prod.yml:ro
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.10-alpine
+    container_name: hotdeal-caddy
+    depends_on:
+      app:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

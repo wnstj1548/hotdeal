@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -32,31 +33,31 @@ public class DealController {
 
     @Operation(summary = "핫딜 목록 조회", description = "소스/검색어/페이지 조건으로 핫딜 목록을 조회합니다.")
     @GetMapping("/deals")
-    public DealPageResponse getDeals(@Valid @ParameterObject @ModelAttribute DealSearchRequest request) {
-        return dealQueryService.getDeals(request);
+    public ResponseEntity<DealPageResponse> getDeals(@Valid @ParameterObject @ModelAttribute DealSearchRequest request) {
+        return ResponseEntity.ok(dealQueryService.getDeals(request));
     }
 
     @Operation(summary = "인기 핫딜 차트 조회", description = "최근 3시간 이내 게시물 중 조회수 기준 상위 목록을 조회합니다.")
     @GetMapping("/deals/popular")
-    public List<DealItemResponse> getPopularDeals(@Valid @ParameterObject @ModelAttribute PopularDealRequest request) {
-        return dealQueryService.getPopularDeals(request);
+    public ResponseEntity<List<DealItemResponse>> getPopularDeals(@Valid @ParameterObject @ModelAttribute PopularDealRequest request) {
+        return ResponseEntity.ok(dealQueryService.getPopularDeals(request));
     }
 
     @Operation(summary = "소스별 요약 조회", description = "소스별 누적 핫딜 건수를 조회합니다.")
     @GetMapping("/sources")
-    public List<SourceSummaryResponse> getSources() {
-        return dealQueryService.getSourceSummary();
+    public ResponseEntity<List<SourceSummaryResponse>> getSources() {
+        return ResponseEntity.ok(dealQueryService.getSourceSummary());
     }
 
     @Operation(summary = "소스별 최신 수집 상태 조회", description = "소스별 마지막 수집 시각과 성공 여부를 조회합니다.")
     @GetMapping("/sources/freshness")
-    public List<SourceFreshnessResponse> getSourceFreshness() {
-        return dealQueryService.getSourceFreshness();
+    public ResponseEntity<List<SourceFreshnessResponse>> getSourceFreshness() {
+        return ResponseEntity.ok(dealQueryService.getSourceFreshness());
     }
 
     @Operation(summary = "카테고리 목록 조회", description = "필터 UI에 사용하는 카테고리 목록을 조회합니다.")
     @GetMapping("/categories")
-    public List<String> getCategories(@RequestParam(required = false) DealSource source) {
-        return dealQueryService.getCategories(source);
+    public ResponseEntity<List<String>> getCategories(@RequestParam(required = false) DealSource source) {
+        return ResponseEntity.ok(dealQueryService.getCategories(source));
     }
 }

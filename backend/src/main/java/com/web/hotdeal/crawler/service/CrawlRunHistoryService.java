@@ -5,6 +5,7 @@ import com.web.hotdeal.crawler.model.CrawlSourceRun;
 import com.web.hotdeal.crawler.model.CrawlTriggerType;
 import com.web.hotdeal.crawler.repository.CrawlRunRepository;
 import com.web.hotdeal.deal.model.DealSource;
+import com.web.hotdeal.deal.service.DealCacheService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CrawlRunHistoryService {
     private final CrawlRunRepository crawlRunRepository;
+    private final DealCacheService dealCacheService;
 
     @Transactional
     public void saveRuns(CrawlTriggerType triggerType, DealSource requestedSource, List<CrawlSourceRun> sourceRuns) {
@@ -24,6 +26,7 @@ public class CrawlRunHistoryService {
                 .map(sourceRun -> toEntity(triggerType, requestedSource, sourceRun, now))
                 .toList();
         crawlRunRepository.saveAll(runs);
+        dealCacheService.evictSourceFreshnessCache();
     }
 
     private CrawlRun toEntity(

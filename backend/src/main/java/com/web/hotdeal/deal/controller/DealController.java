@@ -4,7 +4,9 @@ import com.web.hotdeal.deal.dto.request.DealSearchRequest;
 import com.web.hotdeal.deal.dto.request.PopularDealRequest;
 import com.web.hotdeal.deal.dto.response.DealItemResponse;
 import com.web.hotdeal.deal.dto.response.DealPageResponse;
+import com.web.hotdeal.deal.dto.response.SourceFreshnessResponse;
 import com.web.hotdeal.deal.dto.response.SourceSummaryResponse;
+import com.web.hotdeal.deal.model.DealSource;
 import com.web.hotdeal.deal.service.DealQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +16,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,5 +46,17 @@ public class DealController {
     @GetMapping("/sources")
     public List<SourceSummaryResponse> getSources() {
         return dealQueryService.getSourceSummary();
+    }
+
+    @Operation(summary = "소스별 최신 수집 상태 조회", description = "소스별 마지막 수집 시각과 성공 여부를 조회합니다.")
+    @GetMapping("/sources/freshness")
+    public List<SourceFreshnessResponse> getSourceFreshness() {
+        return dealQueryService.getSourceFreshness();
+    }
+
+    @Operation(summary = "카테고리 목록 조회", description = "필터 UI에 사용하는 카테고리 목록을 조회합니다.")
+    @GetMapping("/categories")
+    public List<String> getCategories(@RequestParam(required = false) DealSource source) {
+        return dealQueryService.getCategories(source);
     }
 }

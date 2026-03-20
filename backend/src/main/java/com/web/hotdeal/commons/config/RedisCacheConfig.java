@@ -20,6 +20,8 @@ public class RedisCacheConfig {
     public static final String DEAL_PAGE_CACHE = "dealPages";
     public static final String POPULAR_DEALS_CACHE = "popularDeals";
     public static final String SOURCE_SUMMARY_CACHE = "sourceSummary";
+    public static final String SOURCE_FRESHNESS_CACHE = "sourceFreshness";
+    public static final String CATEGORY_OPTIONS_CACHE = "categoryOptions";
 
     private static final Duration DEFAULT_CACHE_TTL = Duration.ofSeconds(30);
 
@@ -52,6 +54,8 @@ public class RedisCacheConfig {
                 .withCacheConfiguration(DEAL_PAGE_CACHE, baseConfiguration.entryTtl(Duration.ofSeconds(30)))
                 .withCacheConfiguration(POPULAR_DEALS_CACHE, baseConfiguration.entryTtl(Duration.ofSeconds(30)))
                 .withCacheConfiguration(SOURCE_SUMMARY_CACHE, baseConfiguration.entryTtl(Duration.ofSeconds(60)))
+                .withCacheConfiguration(SOURCE_FRESHNESS_CACHE, baseConfiguration.entryTtl(Duration.ofSeconds(30)))
+                .withCacheConfiguration(CATEGORY_OPTIONS_CACHE, baseConfiguration.entryTtl(Duration.ofSeconds(60)))
                 .build();
     }
 }

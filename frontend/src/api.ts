@@ -1,4 +1,4 @@
-import type { DealItem, DealPage, DealSource, SourceSummary } from "./types";
+import type { DealItem, DealPage, DealSortOption, DealSource, SourceSummary } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -14,10 +14,26 @@ export async function fetchSources(): Promise<SourceSummary[]> {
   return request<SourceSummary[]>("/api/sources");
 }
 
+export async function fetchCategories(options: {
+  source: DealSource | "ALL";
+}): Promise<string[]> {
+  const params = new URLSearchParams();
+  if (options.source !== "ALL") {
+    params.set("source", options.source);
+  }
+  const query = params.toString();
+  return request<string[]>(query ? `/api/categories?${query}` : "/api/categories");
+}
+
 export async function fetchDeals(options: {
   page: number;
   size: number;
   query: string;
+  category: string;
+  minPrice: number | null;
+  maxPrice: number | null;
+  excludeEnded: boolean;
+  sort: DealSortOption;
   source: DealSource | "ALL";
 }): Promise<DealPage> {
   const params = new URLSearchParams();
@@ -29,6 +45,19 @@ export async function fetchDeals(options: {
   if (options.source !== "ALL") {
     params.set("source", options.source);
   }
+  if (options.category.trim()) {
+    params.set("category", options.category.trim());
+  }
+  if (options.minPrice !== null) {
+    params.set("minPrice", String(options.minPrice));
+  }
+  if (options.maxPrice !== null) {
+    params.set("maxPrice", String(options.maxPrice));
+  }
+  if (options.excludeEnded) {
+    params.set("excludeEnded", "true");
+  }
+  params.set("sort", options.sort);
   return request<DealPage>(`/api/deals?${params.toString()}`);
 }
 

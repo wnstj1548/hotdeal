@@ -2,6 +2,7 @@ package com.web.hotdeal.crawler.model;
 
 import com.web.hotdeal.deal.model.Deal;
 import com.web.hotdeal.deal.model.DealSource;
+import com.web.hotdeal.deal.support.PriceParser;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +26,7 @@ public record CrawledDeal(
 ) {
     public Deal toEntity(LocalDateTime now) {
         LocalDateTime normalizedPostedAt = postedAt == null ? now : postedAt;
+        Integer parsedPriceValue = PriceParser.parsePriceValue(priceText);
         return Deal.builder()
                 .sourceType(sourceType)
                 .sourcePostId(sourcePostId)
@@ -34,6 +36,7 @@ public record CrawledDeal(
                 .mallName(mallName)
                 .category(category)
                 .priceText(priceText)
+                .priceValue(parsedPriceValue)
                 .shippingText(shippingText)
                 .postedAt(normalizedPostedAt)
                 .crawledAt(now)
@@ -57,6 +60,7 @@ public record CrawledDeal(
                 mallName,
                 category,
                 priceText,
+                PriceParser.parsePriceValue(priceText),
                 shippingText,
                 postedAt,
                 likeCount,

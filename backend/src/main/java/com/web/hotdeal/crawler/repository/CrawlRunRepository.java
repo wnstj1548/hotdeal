@@ -16,5 +16,7 @@ public interface CrawlRunRepository extends JpaRepository<CrawlRun, Long> {
 
     Page<CrawlRun> findBySourceAndTriggerType(DealSource source, CrawlTriggerType triggerType, Pageable pageable);
 
+    Optional<CrawlRun> findFirstBySourceOrderByEndedAtDesc(DealSource source);
+
     Optional<CrawlRun> findFirstBySourceAndSuccessTrueOrderByEndedAtDesc(DealSource source);
 }

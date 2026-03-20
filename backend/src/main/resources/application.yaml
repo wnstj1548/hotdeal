@@ -10,14 +10,14 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      password: ${REDIS_PASSWORD:1548}
       database: ${REDIS_DATABASE:0}
   cache:
     type: redis
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     open-in-view: false
     properties:
       hibernate:

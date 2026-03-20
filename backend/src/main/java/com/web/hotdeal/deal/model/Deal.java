@@ -29,7 +29,9 @@ import java.util.function.Consumer;
         },
         indexes = {
                 @Index(name = "idx_deal_posted_at", columnList = "posted_at"),
-                @Index(name = "idx_deal_source_type", columnList = "source_type")
+                @Index(name = "idx_deal_source_type", columnList = "source_type"),
+                @Index(name = "idx_deal_category", columnList = "category"),
+                @Index(name = "idx_deal_price_value", columnList = "price_value")
         }
 )
 public class Deal {
@@ -61,6 +63,9 @@ public class Deal {
 
     @Column(name = "price_text", length = 128)
     private String priceText;
+
+    @Column(name = "price_value")
+    private Integer priceValue;
 
     @Column(name = "shipping_text", length = 128)
     private String shippingText;
@@ -103,6 +108,7 @@ public class Deal {
             String mallName,
             String category,
             String priceText,
+            Integer priceValue,
             String shippingText,
             LocalDateTime postedAt,
             LocalDateTime crawledAt,
@@ -123,6 +129,7 @@ public class Deal {
         this.mallName = mallName;
         this.category = category;
         this.priceText = priceText;
+        this.priceValue = priceValue;
         this.shippingText = shippingText;
         this.postedAt = postedAt;
         this.crawledAt = crawledAt;
@@ -144,6 +151,7 @@ public class Deal {
             String mallName,
             String category,
             String priceText,
+            Integer priceValue,
             String shippingText,
             LocalDateTime postedAt,
             Integer likeCount,
@@ -164,6 +172,7 @@ public class Deal {
         changed |= updateField(this.mallName, mallName, value -> this.mallName = value);
         changed |= updateField(this.category, category, value -> this.category = value);
         changed |= updateField(this.priceText, priceText, value -> this.priceText = value);
+        changed |= updateField(this.priceValue, priceValue, value -> this.priceValue = value);
         changed |= updateField(this.shippingText, shippingText, value -> this.shippingText = value);
         changed |= updateField(this.postedAt, postedAt == null ? this.postedAt : postedAt, value -> this.postedAt = value);
         changed |= updateField(this.likeCount, likeCount, value -> this.likeCount = value);

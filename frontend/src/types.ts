@@ -1,4 +1,6 @@
-export type DealSource = "PPOMPPU" | "FMKOREA" | "EOMISAE" | "QUASARZONE";
+export type DealSource = "PPOMPPU" | "FMKOREA" | "EOMISAE" | "QUASARZONE" | "RULIWEB" | "CLIEN";
+
+export type DealSortOption = "LATEST" | "POPULAR" | "COMMENTS";
 
 export interface DealItem {
   id: number;
@@ -11,6 +13,7 @@ export interface DealItem {
   mallName: string | null;
   category: string | null;
   priceText: string | null;
+  priceValue: number | null;
   shippingText: string | null;
   postedAt: string;
   likeCount: number | null;
@@ -35,4 +38,3 @@ export interface SourceSummary {
   sourceUrl: string;
   totalDeals: number;
 }
-

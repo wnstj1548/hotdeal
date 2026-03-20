@@ -15,6 +15,12 @@ public class DealCacheService {
         clear(RedisCacheConfig.DEAL_PAGE_CACHE);
         clear(RedisCacheConfig.POPULAR_DEALS_CACHE);
         clear(RedisCacheConfig.SOURCE_SUMMARY_CACHE);
+        clear(RedisCacheConfig.SOURCE_FRESHNESS_CACHE);
+        clear(RedisCacheConfig.CATEGORY_OPTIONS_CACHE);
+    }
+
+    public void evictSourceFreshnessCache() {
+        clear(RedisCacheConfig.SOURCE_FRESHNESS_CACHE);
     }
 
     private void clear(String cacheName) {

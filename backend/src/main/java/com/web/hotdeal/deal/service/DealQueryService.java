@@ -1,10 +1,13 @@
 package com.web.hotdeal.deal.service;
 
 import com.web.hotdeal.commons.config.RedisCacheConfig;
+import com.web.hotdeal.crawler.repository.CrawlRunRepository;
+import com.web.hotdeal.deal.dto.request.DealSortOption;
 import com.web.hotdeal.deal.dto.request.DealSearchRequest;
 import com.web.hotdeal.deal.dto.request.PopularDealRequest;
 import com.web.hotdeal.deal.dto.response.DealItemResponse;
 import com.web.hotdeal.deal.dto.response.DealPageResponse;
+import com.web.hotdeal.deal.dto.response.SourceFreshnessResponse;
 import com.web.hotdeal.deal.dto.response.SourceSummaryResponse;
 import com.web.hotdeal.deal.model.Deal;
 import com.web.hotdeal.deal.model.DealSource;
@@ -13,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,9 +31,10 @@ public class DealQueryService {
     private static final int POPULAR_WINDOW_HOURS = 3;
     private static final int DEFAULT_POPULAR_LIMIT = 10;
     private static final int MAX_POPULAR_LIMIT = 50;
-    private static final Sort DEFAULT_SORT = Sort.by(Sort.Order.desc("postedAt"), Sort.Order.desc("id"));
+    private static final DealSortOption DEFAULT_SORT = DealSortOption.LATEST;
 
     private final DealRepository dealRepository;
+    private final CrawlRunRepository crawlRunRepository;
 
     @Cacheable(cacheNames = RedisCacheConfig.DEAL_PAGE_CACHE, key = "T(java.lang.String).valueOf(#request)", sync = true)
     public DealPageResponse getDeals(DealSearchRequest request) {
@@ -40,9 +43,28 @@ public class DealQueryService {
         int safeSize = Math.min(Math.max(requestedSize, 1), MAX_SIZE);
         int safePage = Math.max(requestedPage, 0);
         String normalizedQuery = normalizeQuery(request.q());
-        PageRequest pageable = PageRequest.of(safePage, safeSize, DEFAULT_SORT);
+        String normalizedCategory = normalizeQuery(request.category());
+        Integer minPrice = normalizePrice(request.minPrice());
+        Integer maxPrice = normalizePrice(request.maxPrice());
+        if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+            int temp = minPrice;
+            minPrice = maxPrice;
+            maxPrice = temp;
+        }
+        boolean excludeEnded = Boolean.TRUE.equals(request.excludeEnded());
+        DealSortOption safeSort = request.sort() == null ? DEFAULT_SORT : request.sort();
+        PageRequest pageable = PageRequest.of(safePage, safeSize);
 
-        Page<Deal> dealPage = findDeals(request.source(), normalizedQuery, pageable);
+        Page<Deal> dealPage = dealRepository.searchDeals(
+                request.source(),
+                normalizedQuery,
+                normalizedCategory,
+                minPrice,
+                maxPrice,
+                excludeEnded,
+                safeSort,
+                pageable
+        );
         return DealPageResponse.from(dealPage);
     }
 
@@ -51,6 +73,25 @@ public class DealQueryService {
         return Arrays.stream(DealSource.values())
                 .map(source -> SourceSummaryResponse.from(source, dealRepository.countBySourceType(source)))
                 .toList();
+    }
+
+    @Cacheable(cacheNames = RedisCacheConfig.SOURCE_FRESHNESS_CACHE, sync = true)
+    public List<SourceFreshnessResponse> getSourceFreshness() {
+        return Arrays.stream(DealSource.values())
+                .map(source -> SourceFreshnessResponse.from(
+                        source,
+                        crawlRunRepository.findFirstBySourceOrderByEndedAtDesc(source).orElse(null)
+                ))
+                .toList();
+    }
+
+    @Cacheable(
+            cacheNames = RedisCacheConfig.CATEGORY_OPTIONS_CACHE,
+            key = "#source == null ? 'ALL' : #source.name()",
+            sync = true
+    )
+    public List<String> getCategories(DealSource source) {
+        return dealRepository.findDistinctCategories(source);
     }
 
     @Cacheable(cacheNames = RedisCacheConfig.POPULAR_DEALS_CACHE, key = "T(java.lang.String).valueOf(#request)", sync = true)
@@ -64,24 +105,18 @@ public class DealQueryService {
                 .toList();
     }
 
-    private Page<Deal> findDeals(DealSource source, String query, PageRequest pageable) {
-        if (source != null && query != null) {
-            return dealRepository.findBySourceTypeAndTitleContainingIgnoreCase(source, query, pageable);
-        }
-        if (source != null) {
-            return dealRepository.findBySourceType(source, pageable);
-        }
-        if (query != null) {
-            return dealRepository.findByTitleContainingIgnoreCase(query, pageable);
-        }
-        return dealRepository.findAll(pageable);
-    }
-
     private String normalizeQuery(String query) {
         if (query == null) {
             return null;
         }
         String trimmed = query.trim();
         return trimmed.isBlank() ? null : trimmed;
+    }
+
+    private Integer normalizePrice(Integer price) {
+        if (price == null) {
+            return null;
+        }
+        return Math.max(price, 0);
     }
 }

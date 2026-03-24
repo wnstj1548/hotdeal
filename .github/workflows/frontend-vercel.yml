@@ -10,8 +10,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Build and Deploy Frontend
+  deploy-prod:
+    name: Build and Deploy Frontend (Prod)
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       SITE_URL: ${{ vars.FRONTEND_SITE_URL }}
@@ -68,7 +69,7 @@ jobs:
       - name: Build for Vercel
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel Production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

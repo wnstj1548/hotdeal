@@ -5,13 +5,55 @@ services:
       dockerfile: Dockerfile
     image: hotdeal-backend:latest
     container_name: hotdeal-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_CONFIG_ADDITIONAL_LOCATION: /app/config/
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-hotdeal}
+      DB_USERNAME: ${POSTGRES_USER:-hotdeal}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
+      JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-this-redis-password}
+      REDIS_DATABASE: ${REDIS_DATABASE:-0}
     expose:
       - "8080"
     volumes:
       - ../config/application-prod.yml:/app/config/application-prod.yml:ro
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    container_name: hotdeal-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hotdeal}
+      POSTGRES_USER: ${POSTGRES_USER:-hotdeal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hotdeal} -d ${POSTGRES_DB:-hotdeal}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:8
+    container_name: hotdeal-redis
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:-change-this-redis-password}"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD:-change-this-redis-password} ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     restart: unless-stopped
 
   caddy:
@@ -30,5 +72,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres_data:
+  redis_data:
   caddy_data:
   caddy_config:

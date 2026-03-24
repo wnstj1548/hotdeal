@@ -1,6 +1,8 @@
 spring:
   application:
     name: hotdeal
+  profiles:
+    default: local
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/hotdeal}
     username: ${DB_USERNAME:postgres}
@@ -10,14 +12,14 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:1548}
+      password: ${REDIS_PASSWORD:}
       database: ${REDIS_DATABASE:0}
   cache:
     type: redis
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: ${JPA_DDL_AUTO:create-drop}
     open-in-view: false
     properties:
       hibernate:

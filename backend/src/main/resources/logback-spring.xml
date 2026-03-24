@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="hotdeal"/>
+
+    <property name="LOCAL_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15thread]){faint} %clr([requestId=%X{requestId:-}]){yellow} %clr(%-40.40logger{39}){cyan} : %msg%n%wEx"/>
+
+    <property name="PROD_LOG_PATTERN"
+              value="ts=%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX,UTC} level=%-5level app=${appName} pid=${PID:- } thread=%thread requestId=%X{requestId:-} logger=%logger{36} msg=%replace(%msg){'\\s+',' '}%n%wEx"/>
+
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${LOCAL_LOG_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+
+        <logger name="com.web.hotdeal" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>${PROD_LOG_PATTERN}</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+
+        <logger name="com.web.hotdeal" level="INFO"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

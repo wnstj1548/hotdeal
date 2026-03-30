@@ -7,6 +7,8 @@ on:
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-vercel.yml"
+    paths-ignore:
+      - "backend/**"
   workflow_dispatch:
 
 jobs:
@@ -16,9 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_URL: ${{ vars.FRONTEND_SITE_URL }}
-    defaults:
-      run:
-        working-directory: frontend
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,9 +32,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm ci
 
       - name: Generate SEO files
+        working-directory: frontend
         run: |
           set -euo pipefail
           URL="${SITE_URL:-https://hotdeal-web.vercel.app}"
@@ -58,6 +61,7 @@ jobs:
           EOF
 
       - name: Build frontend
+        working-directory: frontend
         run: npm run build
 
       - name: Install Vercel CLI
@@ -71,6 +75,3 @@ jobs:
 
       - name: Deploy to Vercel Production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

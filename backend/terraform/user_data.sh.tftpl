@@ -15,26 +15,11 @@ dnf install -y docker docker-compose-plugin git awscli amazon-ssm-agent
 systemctl enable --now docker
 systemctl enable --now amazon-ssm-agent || true
 
-usermod -aG docker ec2-user
+usermod -aG docker ec2-user || true
 
 mkdir -p "$DEPLOY_BASE_DIR"
 mkdir -p /etc/hotdeal
 chown -R ec2-user:ec2-user "$DEPLOY_BASE_DIR"
-
-if [ ! -d "$DEPLOY_BASE_DIR/repo/.git" ]; then
-  sudo -u ec2-user git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" "$DEPLOY_BASE_DIR/repo"
-else
-  cd "$DEPLOY_BASE_DIR/repo"
-  sudo -u ec2-user git fetch origin
-  sudo -u ec2-user git checkout "$REPO_BRANCH"
-  sudo -u ec2-user git pull --ff-only origin "$REPO_BRANCH"
-fi
-
-APP_DIR="$DEPLOY_BASE_DIR/repo/$REPO_SUBDIR"
-if [ ! -d "$APP_DIR" ]; then
-  echo "Application directory not found: $APP_DIR"
-  exit 1
-fi
 
 cat >"$ENV_FILE" <<'EOF'
 POSTGRES_DB=${postgres_db}
@@ -46,16 +31,8 @@ REDIS_DATABASE=${redis_database}
 APP_IMAGE=${app_image}
 EOF
 
-chmod 600 "$ENV_FILE"
 chown root:ec2-user "$ENV_FILE"
 chmod 640 "$ENV_FILE"
-
-if [ -f "$APP_DIR/deploy/.env" ]; then
-  rm -f "$APP_DIR/deploy/.env"
-fi
-
-cp "$ENV_FILE" "$APP_DIR/deploy/.env"
-chown ec2-user:ec2-user "$APP_DIR/deploy/.env"
 
 cat >/usr/local/bin/hotdeal-deploy <<'EOF'
 #!/bin/bash
@@ -63,6 +40,7 @@ set -euo pipefail
 
 AWS_REGION="${aws_region}"
 DEPLOY_BASE_DIR="${deploy_base_dir}"
+REPO_URL="${repo_url}"
 REPO_BRANCH="${repo_branch}"
 REPO_SUBDIR="${repo_subdir}"
 ECR_REGISTRY="${ecr_registry}"
@@ -74,6 +52,27 @@ if [ "$#" -ge 1 ]; then
   NEW_IMAGE="$1"
 fi
 
+if ! command -v docker >/dev/null 2>&1; then
+  dnf install -y docker docker-compose-plugin git awscli amazon-ssm-agent
+  systemctl enable --now docker
+fi
+
+mkdir -p "$DEPLOY_BASE_DIR"
+chown -R ec2-user:ec2-user "$DEPLOY_BASE_DIR"
+
+if [ ! -d "$DEPLOY_BASE_DIR/repo/.git" ]; then
+  sudo -u ec2-user git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" "$DEPLOY_BASE_DIR/repo"
+else
+  sudo -u ec2-user git -C "$DEPLOY_BASE_DIR/repo" fetch origin
+  sudo -u ec2-user git -C "$DEPLOY_BASE_DIR/repo" checkout "$REPO_BRANCH"
+  sudo -u ec2-user git -C "$DEPLOY_BASE_DIR/repo" pull --ff-only origin "$REPO_BRANCH"
+fi
+
+if [ ! -d "$APP_DIR" ]; then
+  echo "Application directory not found: $APP_DIR"
+  exit 1
+fi
+
 if [ -n "$NEW_IMAGE" ]; then
   if grep -q '^APP_IMAGE=' "$ENV_FILE"; then
     sed -i "s#^APP_IMAGE=.*#APP_IMAGE=$NEW_IMAGE#g" "$ENV_FILE"
@@ -81,15 +80,6 @@ if [ -n "$NEW_IMAGE" ]; then
     echo "APP_IMAGE=$NEW_IMAGE" >> "$ENV_FILE"
   fi
 fi
-
-if [ ! -d "$APP_DIR/.git" ]; then
-  echo "Repository not found at $APP_DIR"
-  exit 1
-fi
-
-sudo -u ec2-user git -C "$APP_DIR" fetch origin
-sudo -u ec2-user git -C "$APP_DIR" checkout "$REPO_BRANCH"
-sudo -u ec2-user git -C "$APP_DIR" pull --ff-only origin "$REPO_BRANCH"
 
 install -m 640 -o ec2-user -g ec2-user "$ENV_FILE" "$APP_DIR/deploy/.env"
 
@@ -100,3 +90,8 @@ sudo -u ec2-user docker compose --env-file "$APP_DIR/deploy/.env" -f "$APP_DIR/d
 EOF
 
 chmod +x /usr/local/bin/hotdeal-deploy
+
+# Best-effort initial sync; deploy workflow will run the same script later.
+if [ ! -d "$DEPLOY_BASE_DIR/repo/.git" ]; then
+  sudo -u ec2-user git clone --depth 1 --branch "$REPO_BRANCH" "$REPO_URL" "$DEPLOY_BASE_DIR/repo" || true
+fi

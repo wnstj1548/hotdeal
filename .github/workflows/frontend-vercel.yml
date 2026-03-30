@@ -6,15 +6,47 @@ on:
       - main
     paths:
       - "frontend/**"
-      - ".github/workflows/frontend-vercel.yml"
-    paths-ignore:
-      - "backend/**"
   workflow_dispatch:
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend_changed: ${{ steps.diff.outputs.backend_changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed paths in push range
+        id: diff
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="$(git rev-parse "$AFTER^" || true)"
+          fi
+
+          if [ -z "${BEFORE:-}" ]; then
+            echo "backend_changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -q '^backend/'; then
+            echo "backend_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy-prod:
+    needs: detect-changes
     name: Build and Deploy Frontend (Prod)
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.backend_changed != 'true')
     runs-on: ubuntu-latest
     env:
       SITE_URL: ${{ vars.FRONTEND_SITE_URL }}

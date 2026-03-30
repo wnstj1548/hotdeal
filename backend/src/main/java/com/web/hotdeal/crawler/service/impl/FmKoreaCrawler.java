@@ -117,7 +117,7 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
     }
 
     private Document fetchWithPlaywright(String url) {
-        double timeoutMs = Math.max(crawlerProperties.getTimeoutMs(), 10_000);
+        double timeoutMs = Math.max(crawlerProperties.getTimeoutMs(), 20_000);
         try (Playwright playwright = Playwright.create()) {
             try (Browser browser = launchBrowser(playwright)) {
                 Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()

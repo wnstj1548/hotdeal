@@ -13,9 +13,9 @@ public class OpenApiConfig {
     public OpenAPI openApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Hotdeal API")
+                        .title("핫딜 모음 API")
                         .version("v1")
                         .description("핫딜 수집/조회 백엔드 API")
-                        .contact(new Contact().name("hotdeal backend")));
+                        .contact(new Contact().name("hotdeal-moa backend")));
     }
 }

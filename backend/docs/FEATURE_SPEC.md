@@ -69,5 +69,5 @@
 - `CRAWLER_ENABLED` (default: `true`)
 - `CRAWLER_FIXED_DELAY_MS` (default: `180000`)
 - `CRAWLER_INITIAL_DELAY_MS` (default: `10000`)
-- `CRAWLER_TIMEOUT_MS` (default: `10000`)
+- `CRAWLER_TIMEOUT_MS` (default: `20000`)
 - `CRAWLER_MAX_ITEMS_PER_SOURCE` (default: `60`)

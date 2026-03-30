@@ -63,9 +63,13 @@ jobs:
 
       - name: Build backend JAR
         working-directory: backend
+        shell: bash
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon bootJar
+          mkdir -p deploy-artifacts
+          JAR_PATH=$(ls -1 build/libs/*.jar | grep -v "plain" | head -n 1)
+          cp "$JAR_PATH" deploy-artifacts/app.jar
 
       - name: Build and push image
         id: build-image

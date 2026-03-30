@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "frontend/**"
+      - ".github/workflows/frontend-vercel.yml"
   workflow_dispatch:
 
 jobs:
@@ -17,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Detect changed paths in push range
         id: diff
@@ -37,7 +38,7 @@ jobs:
             exit 0
           fi
 
-          if git diff --name-only "$BEFORE" "$AFTER" | grep -q '^backend/'; then
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -E -q '^(backend/|\.github/workflows/deploy\.yml$)'; then
             echo "backend_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "backend_changed=false" >> "$GITHUB_OUTPUT"

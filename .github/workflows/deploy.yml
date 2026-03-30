@@ -47,7 +47,7 @@ jobs:
             exit 0
           fi
 
-          if git diff --name-only "$BEFORE" "$AFTER" | grep -E -q '^(frontend/|\.github/workflows/frontend-vercel\.yml$)'; then
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -q '^frontend/'; then
             echo "frontend_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "frontend_changed=false" >> "$GITHUB_OUTPUT"

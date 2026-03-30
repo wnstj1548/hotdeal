@@ -38,7 +38,7 @@ jobs:
             exit 0
           fi
 
-          if git diff --name-only "$BEFORE" "$AFTER" | grep -E -q '^(backend/|\.github/workflows/deploy\.yml$)'; then
+          if git diff --name-only "$BEFORE" "$AFTER" | grep -q '^backend/'; then
             echo "backend_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "backend_changed=false" >> "$GITHUB_OUTPUT"

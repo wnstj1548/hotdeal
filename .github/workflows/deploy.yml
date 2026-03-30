@@ -23,6 +23,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
       - name: Validate required settings
         shell: bash
         run: |
@@ -54,6 +61,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Build backend JAR
+        working-directory: backend
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon bootJar
+
       - name: Build and push image
         id: build-image
         shell: bash
@@ -65,7 +78,7 @@ jobs:
 
           docker buildx build \
             --platform linux/arm64 \
-            -f backend/Dockerfile \
+            -f backend/Dockerfile.deploy \
             -t "$IMAGE_URI" \
             -t "$IMAGE_LATEST" \
             --push \

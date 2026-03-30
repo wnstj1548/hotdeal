@@ -54,7 +54,7 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
         LocalDateTime incrementalCutoff = resolveIncrementalCutoff();
         List<CrawledDeal> deals = new ArrayList<>();
 
-        for (Element item : document.select("li[class*='li_best2_']")) {
+        for (Element item : selectDealItems(document)) {
             if (deals.size() >= maxItems()) {
                 break;
             }
@@ -137,9 +137,22 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
                     page.navigate(url, new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
                             .setTimeout(timeoutMs));
-                    page.waitForSelector("li[class*='li_best2_']", new Page.WaitForSelectorOptions()
-                            .setTimeout(timeoutMs));
-                    return Jsoup.parse(page.content(), BASE_URL);
+
+                    String html = page.content();
+                    if (isBlockedBySecurityPage(html)) {
+                        throw new IllegalStateException("FMKOREA blocked crawler IP by security system");
+                    }
+
+                    Document document = Jsoup.parse(html, BASE_URL);
+                    if (selectDealItems(document).isEmpty()) {
+                        page.waitForTimeout(1_500);
+                        document = Jsoup.parse(page.content(), BASE_URL);
+                    }
+                    if (selectDealItems(document).isEmpty()) {
+                        String title = CrawlerUtils.cleanText(document.title());
+                        throw new IllegalStateException("FMKOREA page loaded but deal selectors were not found (title=" + title + ")");
+                    }
+                    return document;
                 }
             }
         } catch (Exception e) {
@@ -159,6 +172,18 @@ public class FmKoreaCrawler extends AbstractJsoupCrawler {
         } catch (Exception ignored) {
             return playwright.chromium().launch(baseOptions);
         }
+    }
+
+    private List<Element> selectDealItems(Document document) {
+        return document.select("li[class*='li_best2_']");
+    }
+
+    private boolean isBlockedBySecurityPage(String html) {
+        if (html == null || html.isBlank()) {
+            return false;
+        }
+        return html.contains("에펨코리아 보안 시스템")
+                || html.contains("보안 시스템에 의한 자동 차단");
     }
 
     private String extractId(String href) {

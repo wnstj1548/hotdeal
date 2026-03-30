@@ -1,5 +1,11 @@
 package com.web.hotdeal.crawler.service.impl;
 
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.WaitUntilState;
 import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
@@ -7,6 +13,8 @@ import com.web.hotdeal.crawler.service.CrawlIncrementalService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.crawler.support.DealTextExtractor;
 import com.web.hotdeal.deal.model.DealSource;
+import org.jsoup.HttpStatusException;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Component;
@@ -17,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,9 +35,11 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
     private static final String BASE_URL = "https://eomisae.co.kr";
     private static final Pattern ID_PATTERN = Pattern.compile("^/os/(\\d+)$");
     private static final DateTimeFormatter YYMMDD = DateTimeFormatter.ofPattern("yy.MM.dd");
+    private final CrawlerProperties crawlerProperties;
 
     public EomisaeCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
         super(crawlerProperties, crawlIncrementalService);
+        this.crawlerProperties = crawlerProperties;
     }
 
     @Override
@@ -38,7 +49,7 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
 
     @Override
     public List<CrawledDeal> crawl() {
-        Document document = fetch(LIST_URL);
+        Document document = fetchWithFallback(LIST_URL);
         LocalDateTime incrementalCutoff = resolveIncrementalCutoff();
         List<CrawledDeal> deals = new ArrayList<>();
 
@@ -94,6 +105,96 @@ public class EomisaeCrawler extends AbstractJsoupCrawler {
         }
 
         return deals;
+    }
+
+    private Document fetchWithFallback(String url) {
+        try {
+            return fetch(url);
+        } catch (IllegalStateException e) {
+            if (isHttp403(e)) {
+                return fetchWithPlaywright(url);
+            }
+            throw e;
+        }
+    }
+
+    private boolean isHttp403(Throwable throwable) {
+        Throwable cursor = throwable;
+        while (cursor != null) {
+            if (cursor instanceof HttpStatusException statusException && statusException.getStatusCode() == 403) {
+                return true;
+            }
+            cursor = cursor.getCause();
+        }
+        return false;
+    }
+
+    private Document fetchWithPlaywright(String url) {
+        double timeoutMs = Math.max(crawlerProperties.getTimeoutMs(), 20_000);
+        try (Playwright playwright = Playwright.create()) {
+            try (Browser browser = launchBrowser(playwright)) {
+                Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
+                        .setUserAgent(crawlerProperties.getUserAgent())
+                        .setLocale("ko-KR")
+                        .setTimezoneId("Asia/Seoul")
+                        .setViewportSize(1366, 768)
+                        .setExtraHTTPHeaders(Map.of(
+                                "Accept-Language", "ko-KR,ko;q=0.9,en-US;q=0.8",
+                                "Referer", BASE_URL + "/"
+                        ));
+
+                try (BrowserContext context = browser.newContext(contextOptions)) {
+                    Page page = context.newPage();
+                    page.setDefaultNavigationTimeout(timeoutMs);
+                    page.setDefaultTimeout(timeoutMs);
+                    page.navigate(url, new Page.NavigateOptions()
+                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setTimeout(timeoutMs));
+
+                    String html = page.content();
+                    if (isBlockedPage(html)) {
+                        throw new IllegalStateException("EOMISAE blocked crawler request");
+                    }
+
+                    Document document = Jsoup.parse(html, BASE_URL);
+                    if (document.select("div.card_el").isEmpty()) {
+                        page.waitForTimeout(1_500);
+                        document = Jsoup.parse(page.content(), BASE_URL);
+                    }
+                    if (document.select("div.card_el").isEmpty()) {
+                        String title = CrawlerUtils.cleanText(document.title());
+                        throw new IllegalStateException("EOMISAE page loaded but deal selectors were not found (title=" + title + ")");
+                    }
+                    return document;
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to fetch " + url + " with Playwright", e);
+        }
+    }
+
+    private Browser launchBrowser(Playwright playwright) {
+        BrowserType.LaunchOptions baseOptions = new BrowserType.LaunchOptions()
+                .setHeadless(true)
+                .setArgs(List.of("--no-sandbox", "--disable-dev-shm-usage"));
+        try {
+            return playwright.chromium().launch(new BrowserType.LaunchOptions()
+                    .setHeadless(true)
+                    .setChannel("msedge")
+                    .setArgs(List.of("--no-sandbox", "--disable-dev-shm-usage")));
+        } catch (Exception ignored) {
+            return playwright.chromium().launch(baseOptions);
+        }
+    }
+
+    private boolean isBlockedPage(String html) {
+        if (html == null || html.isBlank()) {
+            return false;
+        }
+        return html.contains("403 Forbidden")
+                || html.contains("Access Denied")
+                || html.contains("웹 방화벽")
+                || html.contains("자동 차단");
     }
 
     private String extractId(String href) {

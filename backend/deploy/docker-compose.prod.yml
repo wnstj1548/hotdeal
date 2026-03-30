@@ -1,9 +1,6 @@
 services:
   app:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    image: hotdeal-backend:latest
+    image: ${APP_IMAGE:-hotdeal-backend:latest}
     container_name: hotdeal-backend
     depends_on:
       postgres:
@@ -12,7 +9,6 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      SPRING_CONFIG_ADDITIONAL_LOCATION: /app/config/
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-hotdeal}
       DB_USERNAME: ${POSTGRES_USER:-hotdeal}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
@@ -23,8 +19,6 @@ services:
       REDIS_DATABASE: ${REDIS_DATABASE:-0}
     expose:
       - "8080"
-    volumes:
-      - ../config/application-prod.yml:/app/config/application-prod.yml:ro
     restart: unless-stopped
 
   postgres:

@@ -1,9 +1,13 @@
-name: Backend CI/CD
+name: Backend CI
 
 on:
   push:
     branches:
       - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci-cd.yml"
+  pull_request:
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci-cd.yml"
@@ -32,119 +36,3 @@ jobs:
 
       - name: Run tests
         run: ./gradlew --no-daemon test
-
-  deploy-prod:
-    name: Deploy to Production
-    if: github.ref == 'refs/heads/main'
-    needs: ci
-    runs-on: ubuntu-latest
-    env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
-      APPLICATION_PROD_YML: ${{ secrets.APPLICATION_PROD_YML }}
-      POSTGRES_DB: ${{ vars.POSTGRES_DB }}
-      POSTGRES_USER: ${{ vars.POSTGRES_USER }}
-      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-      REDIS_DATABASE: ${{ vars.REDIS_DATABASE }}
-      JPA_DDL_AUTO: ${{ vars.JPA_DDL_AUTO }}
-      DOMAIN: ${{ vars.DOMAIN }}
-      ACME_EMAIL: ${{ vars.ACME_EMAIL }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Copy source and deployment files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.DEPLOY_HOST }}
-          username: ${{ env.DEPLOY_USER }}
-          key: ${{ env.DEPLOY_SSH_KEY }}
-          port: ${{ env.DEPLOY_PORT }}
-          source: "backend/.dockerignore,backend/Dockerfile,backend/build.gradle,backend/settings.gradle,backend/gradlew,backend/gradle,backend/src,backend/deploy/docker-compose.prod.yml"
-          target: "~/hotdeal"
-          overwrite: true
-
-      - name: Deploy to production on server
-        uses: appleboy/ssh-action@v1.0.3
-        env:
-          APPLICATION_PROD_YML: ${{ env.APPLICATION_PROD_YML }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          REDIS_PASSWORD: ${{ env.REDIS_PASSWORD }}
-          REDIS_DATABASE: ${{ env.REDIS_DATABASE }}
-          JPA_DDL_AUTO: ${{ env.JPA_DDL_AUTO }}
-          DOMAIN: ${{ env.DOMAIN }}
-          ACME_EMAIL: ${{ env.ACME_EMAIL }}
-        with:
-          host: ${{ env.DEPLOY_HOST }}
-          username: ${{ env.DEPLOY_USER }}
-          key: ${{ env.DEPLOY_SSH_KEY }}
-          port: ${{ env.DEPLOY_PORT }}
-          script_stop: true
-          envs: APPLICATION_PROD_YML,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,REDIS_PASSWORD,REDIS_DATABASE,JPA_DDL_AUTO,DOMAIN,ACME_EMAIL
-          script: |
-            set -euo pipefail
-
-            if [ -z "${APPLICATION_PROD_YML}" ]; then
-              echo "APPLICATION_PROD_YML secret is required."
-              exit 1
-            fi
-
-            mkdir -p ~/hotdeal/backend/config ~/hotdeal/backend/deploy/caddy
-            printf '%s' "${APPLICATION_PROD_YML}" > ~/hotdeal/backend/config/application-prod.yml
-            chmod 600 ~/hotdeal/backend/config/application-prod.yml
-
-            ENV_FILE=~/hotdeal/backend/deploy/.env
-            cat > "${ENV_FILE}" <<EOF
-            POSTGRES_DB=${POSTGRES_DB:-hotdeal}
-            POSTGRES_USER=${POSTGRES_USER:-hotdeal}
-            POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-change-this-postgres-password}
-            REDIS_PASSWORD=${REDIS_PASSWORD:-change-this-redis-password}
-            REDIS_DATABASE=${REDIS_DATABASE:-0}
-            JPA_DDL_AUTO=${JPA_DDL_AUTO:-update}
-            EOF
-            chmod 600 "${ENV_FILE}"
-
-            if [ -n "${DOMAIN}" ]; then
-              if [ -n "${ACME_EMAIL}" ]; then
-                cat > ~/hotdeal/backend/deploy/caddy/Caddyfile <<EOF
-            {
-              email ${ACME_EMAIL}
-            }
-
-            ${DOMAIN} {
-              encode gzip
-              reverse_proxy app:8080
-            }
-            EOF
-              else
-                cat > ~/hotdeal/backend/deploy/caddy/Caddyfile <<EOF
-            ${DOMAIN} {
-              encode gzip
-              reverse_proxy app:8080
-            }
-            EOF
-              fi
-            else
-              cat > ~/hotdeal/backend/deploy/caddy/Caddyfile <<EOF
-            :80 {
-              encode gzip
-              reverse_proxy app:8080
-            }
-            EOF
-            fi
-
-            COMPOSE_FILE=~/hotdeal/backend/deploy/docker-compose.prod.yml
-
-            if [ ! -f "${COMPOSE_FILE}" ]; then
-              echo "docker-compose.prod.yml not found on server."
-              exit 1
-            fi
-
-            docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" build app
-            docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up -d --remove-orphans
-            docker image prune -f

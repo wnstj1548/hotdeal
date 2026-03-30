@@ -1,0 +1,38 @@
+aws_region       = "ap-northeast-2"
+project_name     = "hotdeal"
+environment      = "prod"
+instance_type    = "t4g.micro"
+ami_architecture = "arm64"
+
+# Required for bootstrapping code on EC2 (must be cloneable from EC2).
+# Private repo example: https://<token>@github.com/<org>/<repo>.git
+repo_url    = "https://github.com/<your-org>/<your-repo>.git"
+repo_branch = "main"
+repo_subdir = "backend"
+
+# Required for GitHub OIDC trust policy.
+github_owner  = "<your-github-owner>"
+github_repo   = "<your-github-repo>"
+github_branch = "main"
+
+# If your account already has this OIDC provider, set create_github_oidc_provider = false
+# and provide existing_github_oidc_provider_arn.
+create_github_oidc_provider   = true
+existing_github_oidc_provider_arn = null
+
+# Optional: set this if you use SSH key login.
+key_name = "your-ec2-keypair-name"
+
+# Optional: set your public IP for SSH, or keep [] to disable SSH ingress.
+allowed_ssh_cidrs = ["203.0.113.10/32"]
+
+# Set true only if you need a fixed public IP.
+allocate_eip = true
+
+# Optional: provide explicit passwords. If null, Terraform generates random ones.
+postgres_password = null
+redis_password    = null
+
+tags = {
+  Owner = "your-name"
+}

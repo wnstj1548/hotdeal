@@ -21,7 +21,13 @@ export function DealCard({ deal, isRead, onRead }: DealCardProps) {
         <div className="grid grid-cols-[88px_1fr] gap-4 p-4 sm:grid-cols-[112px_1fr]">
           <div className="h-[72px] w-[88px] overflow-hidden rounded-lg bg-slate-100 sm:h-[84px] sm:w-[112px]">
             {deal.thumbnailUrl ? (
-              <img src={deal.thumbnailUrl} alt={deal.title} className="h-full w-full object-cover" loading="lazy" />
+              <img
+                src={deal.thumbnailUrl}
+                alt={deal.title}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
             ) : (
               <div className="flex h-full items-center justify-center text-xs text-slate-400">NO IMAGE</div>
             )}

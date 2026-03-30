@@ -13,6 +13,7 @@ services:
       DB_USERNAME: ${POSTGRES_USER:-hotdeal}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
       JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
+      CRAWLER_TIMEOUT_MS: ${CRAWLER_TIMEOUT_MS:-30000}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-change-this-redis-password}

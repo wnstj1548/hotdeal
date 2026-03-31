@@ -154,6 +154,18 @@ variable "jpa_ddl_auto" {
   default     = "update"
 }
 
+variable "crawler_request_delay_min_ms" {
+  description = "Minimum random delay (ms) before each crawler request."
+  type        = number
+  default     = 300
+}
+
+variable "crawler_request_delay_max_ms" {
+  description = "Maximum random delay (ms) before each crawler request."
+  type        = number
+  default     = 1200
+}
+
 variable "github_owner" {
   description = "GitHub owner (user or org) for OIDC trust policy."
   type        = string

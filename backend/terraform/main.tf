@@ -78,9 +78,9 @@ resource "aws_ecr_lifecycle_policy" "app" {
         rulePriority = 1
         description  = "Keep recent images only"
         selection = {
-          tagStatus     = "any"
-          countType     = "imageCountMoreThan"
-          countNumber   = 30
+          tagStatus   = "any"
+          countType   = "imageCountMoreThan"
+          countNumber = 30
         }
         action = {
           type = "expire"
@@ -180,19 +180,21 @@ resource "aws_instance" "app" {
   iam_instance_profile = aws_iam_instance_profile.ec2.name
 
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
-    aws_region          = var.aws_region
-    deploy_base_dir     = var.deploy_base_dir
-    repo_url            = var.repo_url
-    repo_branch         = var.repo_branch
-    repo_subdir         = var.repo_subdir
-    ecr_registry        = local.ecr_registry
-    app_image           = local.app_image
-    postgres_db         = var.postgres_db
-    postgres_user       = var.postgres_user
-    postgres_password   = local.resolved_postgres_password
-    redis_password      = local.resolved_redis_password
-    redis_database      = tostring(var.redis_database)
-    jpa_ddl_auto        = var.jpa_ddl_auto
+    aws_region                   = var.aws_region
+    deploy_base_dir              = var.deploy_base_dir
+    repo_url                     = var.repo_url
+    repo_branch                  = var.repo_branch
+    repo_subdir                  = var.repo_subdir
+    ecr_registry                 = local.ecr_registry
+    app_image                    = local.app_image
+    postgres_db                  = var.postgres_db
+    postgres_user                = var.postgres_user
+    postgres_password            = local.resolved_postgres_password
+    redis_password               = local.resolved_redis_password
+    redis_database               = tostring(var.redis_database)
+    jpa_ddl_auto                 = var.jpa_ddl_auto
+    crawler_request_delay_min_ms = tostring(var.crawler_request_delay_min_ms)
+    crawler_request_delay_max_ms = tostring(var.crawler_request_delay_max_ms)
   })
 
   metadata_options {

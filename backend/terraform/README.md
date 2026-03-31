@@ -29,6 +29,7 @@ Edit `terraform.tfvars`:
 - `repo_subdir` (`backend` for this repo)
 - `github_owner`, `github_repo` (required)
 - `key_name` and `allowed_ssh_cidrs` if SSH is needed
+- `crawler_request_delay_min_ms`, `crawler_request_delay_max_ms` for crawler random delay range
 - If OIDC provider already exists in your account, set:
   - `create_github_oidc_provider = false`
   - `existing_github_oidc_provider_arn = "arn:...:oidc-provider/token.actions.githubusercontent.com"`

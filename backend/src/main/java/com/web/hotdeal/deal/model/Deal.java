@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Basic;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -94,6 +96,7 @@ public class Deal {
     @Column(name = "is_ended")
     private Boolean ended;
 
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "raw_snapshot", columnDefinition = "TEXT")
     private String rawSnapshot;
 
@@ -180,7 +183,10 @@ public class Deal {
         changed |= updateField(this.viewCount, viewCount, value -> this.viewCount = value);
         changed |= updateField(this.hot, hot, value -> this.hot = value);
         changed |= updateField(this.ended, ended, value -> this.ended = value);
-        changed |= updateField(this.rawSnapshot, rawSnapshot, value -> this.rawSnapshot = value);
+        // rawSnapshot is for diagnostics only and must not trigger service-facing updates.
+        if (this.rawSnapshot == null && rawSnapshot != null) {
+            this.rawSnapshot = rawSnapshot;
+        }
 
         if (changed) {
             this.crawledAt = now;

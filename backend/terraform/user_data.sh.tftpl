@@ -29,6 +29,8 @@ JPA_DDL_AUTO=${jpa_ddl_auto}
 REDIS_PASSWORD=${redis_password}
 REDIS_DATABASE=${redis_database}
 APP_IMAGE=${app_image}
+CRAWLER_REQUEST_DELAY_MIN_MS=${crawler_request_delay_min_ms}
+CRAWLER_REQUEST_DELAY_MAX_MS=${crawler_request_delay_max_ms}
 EOF
 
 chown root:ec2-user "$ENV_FILE"

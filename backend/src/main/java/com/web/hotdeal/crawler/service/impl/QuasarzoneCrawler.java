@@ -4,6 +4,7 @@ import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
 import com.web.hotdeal.crawler.service.CrawlIncrementalService;
+import com.web.hotdeal.crawler.service.RobotsPolicyService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.deal.model.DealSource;
 import org.jsoup.nodes.Document;
@@ -28,8 +29,12 @@ public class QuasarzoneCrawler extends AbstractJsoupCrawler {
     private static final DateTimeFormatter YYMMDD_DOT = DateTimeFormatter.ofPattern("yy.MM.dd");
     private static final DateTimeFormatter YYYYMMDD_DOT = DateTimeFormatter.ofPattern("yyyy.MM.dd");
 
-    public QuasarzoneCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
-        super(crawlerProperties, crawlIncrementalService);
+    public QuasarzoneCrawler(
+            CrawlerProperties crawlerProperties,
+            CrawlIncrementalService crawlIncrementalService,
+            RobotsPolicyService robotsPolicyService
+    ) {
+        super(crawlerProperties, crawlIncrementalService, robotsPolicyService);
     }
 
     @Override

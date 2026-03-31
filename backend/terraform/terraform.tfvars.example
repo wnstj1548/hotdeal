@@ -33,6 +33,10 @@ allocate_eip = true
 postgres_password = null
 redis_password    = null
 
+# Optional: crawler anti-bot behavior
+crawler_request_delay_min_ms = 300
+crawler_request_delay_max_ms = 1200
+
 tags = {
   Owner = "your-name"
 }

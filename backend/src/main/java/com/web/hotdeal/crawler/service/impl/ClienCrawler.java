@@ -4,6 +4,7 @@ import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
 import com.web.hotdeal.crawler.service.CrawlIncrementalService;
+import com.web.hotdeal.crawler.service.RobotsPolicyService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.crawler.support.DealTextExtractor;
 import com.web.hotdeal.deal.model.DealSource;
@@ -33,8 +34,12 @@ public class ClienCrawler extends AbstractJsoupCrawler {
     private static final DateTimeFormatter MMDD_DASH = DateTimeFormatter.ofPattern("MM-dd");
     private static final DateTimeFormatter HHMM = DateTimeFormatter.ofPattern("HH:mm");
 
-    public ClienCrawler(CrawlerProperties crawlerProperties, CrawlIncrementalService crawlIncrementalService) {
-        super(crawlerProperties, crawlIncrementalService);
+    public ClienCrawler(
+            CrawlerProperties crawlerProperties,
+            CrawlIncrementalService crawlIncrementalService,
+            RobotsPolicyService robotsPolicyService
+    ) {
+        super(crawlerProperties, crawlIncrementalService, robotsPolicyService);
     }
 
     @Override

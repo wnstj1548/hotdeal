@@ -31,14 +31,26 @@ server:
 app:
   crawler:
     enabled: ${CRAWLER_ENABLED:true}
-    fixed-delay-ms: ${CRAWLER_FIXED_DELAY_MS:180000}
+    fixed-delay-ms: ${CRAWLER_FIXED_DELAY_MS:60000}
     initial-delay-ms: ${CRAWLER_INITIAL_DELAY_MS:10000}
+    schedule-delay-min-ms: ${CRAWLER_SCHEDULE_DELAY_MIN_MS:300000}
+    schedule-delay-max-ms: ${CRAWLER_SCHEDULE_DELAY_MAX_MS:600000}
     timeout-ms: ${CRAWLER_TIMEOUT_MS:20000}
     max-items-per-source: ${CRAWLER_MAX_ITEMS_PER_SOURCE:60}
+    request-delay-min-ms: ${CRAWLER_REQUEST_DELAY_MIN_MS:300}
+    request-delay-max-ms: ${CRAWLER_REQUEST_DELAY_MAX_MS:1200}
     user-agent: ${CRAWLER_USER_AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36}
+    accept: ${CRAWLER_ACCEPT:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8}
+    accept-language: ${CRAWLER_ACCEPT_LANGUAGE:ko-KR,ko;q=0.9,en-US;q=0.8}
+    accept-encoding: ${CRAWLER_ACCEPT_ENCODING:gzip, deflate}
+    cache-control: ${CRAWLER_CACHE_CONTROL:no-cache}
     incremental-enabled: ${CRAWLER_INCREMENTAL_ENABLED:true}
     incremental-overlap-minutes: ${CRAWLER_INCREMENTAL_OVERLAP_MINUTES:20}
     incremental-min-refresh-count: ${CRAWLER_INCREMENTAL_MIN_REFRESH_COUNT:20}
+    respect-robots-txt: ${CRAWLER_RESPECT_ROBOTS_TXT:true}
+    robots-fail-closed: ${CRAWLER_ROBOTS_FAIL_CLOSED:true}
+    robots-timeout-ms: ${CRAWLER_ROBOTS_TIMEOUT_MS:5000}
+    robots-cache-ttl-ms: ${CRAWLER_ROBOTS_CACHE_TTL_MS:3600000}
   rate-limit:
     enabled: ${RATE_LIMIT_ENABLED:true}
     fail-open: ${RATE_LIMIT_FAIL_OPEN:true}

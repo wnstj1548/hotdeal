@@ -24,7 +24,7 @@ export function DealsPagination({
 }: DealsPaginationProps) {
   return (
     <Panel as="footer" className="mt-6 rounded-xl px-4 py-3">
-      <p className="mb-3 text-sm text-slate-600">
+      <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
         페이지 {currentPage + 1} / {Math.max(totalPages, 1)}
       </p>
       <div className="flex flex-wrap items-center gap-2">

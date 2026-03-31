@@ -12,7 +12,8 @@ import {
   POPULAR_LIMIT_OPTIONS,
   READ_DEAL_STORAGE_KEY,
   REFRESH_MS,
-  SORT_OPTIONS
+  SORT_OPTIONS,
+  THEME_STORAGE_KEY
 } from "./constants";
 import type { DealItem, DealPage, DealSortOption, SourceSummary } from "./types";
 import { parsePriceInput, toReadDealKey } from "./utils/deal";
@@ -26,6 +27,21 @@ const EMPTY_PAGE: DealPage = {
   totalPages: 0,
   hasNext: false
 };
+
+type ThemeMode = "light" | "dark";
+
+function getInitialThemeMode(): ThemeMode {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
 export default function App() {
   const [sources, setSources] = useState<SourceSummary[]>([]);
@@ -51,6 +67,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [popularError, setPopularError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
+  const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
 
   useEffect(() => {
     fetchSources()
@@ -108,6 +125,16 @@ export default function App() {
     }, REFRESH_MS);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.toggle("dark", themeMode === "dark");
+    root.style.colorScheme = themeMode;
+  }, [themeMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+  }, [themeMode]);
 
   useEffect(() => {
     try {
@@ -177,6 +204,10 @@ export default function App() {
     setPage(0);
   };
 
+  const onToggleTheme = () => {
+    setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   const markDealAsRead = (deal: DealItem) => {
     const key = toReadDealKey(deal);
     setReadDealKeys((prev) => {
@@ -192,9 +223,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,#dbeafe_0%,#eff6ff_35%,#fff7ed_70%,#ffffff_100%)] text-ink">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,#dbeafe_0%,#eff6ff_35%,#fff7ed_70%,#ffffff_100%)] text-ink transition-colors dark:bg-[radial-gradient(circle_at_18%_18%,#172554_0%,#0f172a_42%,#111827_70%,#020617_100%)] dark:text-slate-100">
       <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6">
-        <PageHeader />
+        <PageHeader themeMode={themeMode} onToggleTheme={onToggleTheme} />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="lg:sticky lg:top-6 lg:h-fit">
@@ -238,10 +269,12 @@ export default function App() {
             <main className="mt-6 space-y-3">
               {loading && <DealsLoadingSkeleton />}
               {error && !loading && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-950/40 dark:text-red-200">
+                  {error}
+                </div>
               )}
               {!loading && !error && deals.items.length === 0 && (
-                <div className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+                <div className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300">
                   조건에 맞는 딜이 없습니다.
                 </div>
               )}

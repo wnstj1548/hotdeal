@@ -104,14 +104,14 @@ export function DealFiltersPanel({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             <Checkbox
               checked={excludeEnded}
               onChange={(event) => onExcludeEndedChange(event.target.checked)}
             />
             품절/종료 제외
           </label>
-          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
             정렬
             <Select
               uiSize="sm"
@@ -157,7 +157,7 @@ export function DealFiltersPanel({
         ))}
       </div>
 
-      <div className="mt-3 text-xs text-slate-600">
+      <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
         적용 필터:
         <span className="ml-1">
           {query ? `검색어 "${query}"` : "검색어 없음"}

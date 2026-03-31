@@ -32,9 +32,9 @@ export function Button({
 function variantBaseClasses(variant: ButtonVariant): string {
   switch (variant) {
     case "primary":
-      return "rounded-xl bg-skyline px-5 text-sm font-bold text-white hover:bg-blue-800";
+      return "rounded-xl bg-skyline px-5 text-sm font-bold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500";
     case "outline":
-      return "rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:border-slate-400";
+      return "rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500";
     case "chip":
       return "rounded-full border px-3 py-1 text-xs font-semibold";
     case "page":
@@ -44,10 +44,14 @@ function variantBaseClasses(variant: ButtonVariant): string {
 
 function variantStateClasses(variant: ButtonVariant, active: boolean): string {
   if (variant === "chip") {
-    return active ? "border-accent bg-accent text-white" : "border-slate-300 bg-white text-slate-700";
+    return active
+      ? "border-accent bg-accent text-white dark:border-orange-400 dark:bg-orange-500"
+      : "border-slate-300 bg-white text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200";
   }
   if (variant === "page") {
-    return active ? "border-skyline bg-skyline text-white" : "border-slate-300 bg-white text-slate-700 hover:border-slate-400";
+    return active
+      ? "border-skyline bg-skyline text-white dark:border-blue-500 dark:bg-blue-600"
+      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500";
   }
   return "";
 }

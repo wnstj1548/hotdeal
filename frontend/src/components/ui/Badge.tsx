@@ -33,12 +33,12 @@ function sizeClasses(size: BadgeSize): string {
 function variantClasses(variant: BadgeVariant): string {
   switch (variant) {
     case "skyline":
-      return "bg-skyline text-white";
+      return "bg-skyline text-white dark:bg-blue-600";
     case "success":
-      return "bg-emerald-600 text-white";
+      return "bg-emerald-600 text-white dark:bg-emerald-500";
     case "neutral":
-      return "bg-slate-200 text-slate-700";
+      return "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200";
     case "warning":
-      return "bg-amber-500/90 text-white";
+      return "bg-amber-500/90 text-white dark:bg-amber-500";
   }
 }

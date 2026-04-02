@@ -1,35 +1,30 @@
 package com.web.hotdeal.crawler.service;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserContext;
-import com.microsoft.playwright.BrowserType;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
-import com.microsoft.playwright.options.WaitUntilState;
 import com.web.hotdeal.commons.config.CrawlerProperties;
 import org.jsoup.HttpStatusException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractJsoupCrawler implements DealCrawler {
     private final CrawlerProperties crawlerProperties;
     private final CrawlIncrementalService crawlIncrementalService;
     private final RobotsPolicyService robotsPolicyService;
+    private final PlaywrightFetcher playwrightFetcher;
 
     protected AbstractJsoupCrawler(
             CrawlerProperties crawlerProperties,
             CrawlIncrementalService crawlIncrementalService,
-            RobotsPolicyService robotsPolicyService
+            RobotsPolicyService robotsPolicyService,
+            PlaywrightFetcher playwrightFetcher
     ) {
         this.crawlerProperties = crawlerProperties;
         this.crawlIncrementalService = crawlIncrementalService;
         this.robotsPolicyService = robotsPolicyService;
+        this.playwrightFetcher = playwrightFetcher;
     }
 
     protected Document fetch(String url) {
@@ -67,55 +62,17 @@ public abstract class AbstractJsoupCrawler implements DealCrawler {
     }
 
     private Document fetchWithPlaywright(String url) throws HttpStatusException {
-        double timeoutMs = Math.max(crawlerProperties.getTimeoutMs(), 20_000);
-        try (Playwright playwright = Playwright.create();
-             Browser browser = launchBrowser(playwright)) {
-            Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                    .setUserAgent(crawlerProperties.getUserAgent())
-                    .setLocale("ko-KR")
-                    .setTimezoneId("Asia/Seoul")
-                    .setViewportSize(1366, 768)
-                    .setExtraHTTPHeaders(requestHeaders(defaultReferer(url)));
-
-            try (BrowserContext context = browser.newContext(contextOptions)) {
-                Page page = context.newPage();
-                page.setDefaultNavigationTimeout(timeoutMs);
-                page.setDefaultTimeout(timeoutMs);
-
-                com.microsoft.playwright.Response response = page.navigate(url, new Page.NavigateOptions()
-                        .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-                        .setTimeout(timeoutMs));
-                if (response != null) {
-                    int status = response.status();
-                    if (status == 403) {
-                        throw new HttpStatusException("Forbidden", 403, url);
-                    }
-                    if (status >= 400 && status < 500) {
-                        throw new HttpStatusException("HTTP " + status, status, url);
-                    }
-                }
-
-                return Jsoup.parse(page.content(), url);
-            }
+        try {
+            return playwrightFetcher.fetch(
+                    url,
+                    crawlerProperties.getUserAgent(),
+                    requestHeaders(defaultReferer(url)),
+                    crawlerProperties.getTimeoutMs()
+            );
         } catch (HttpStatusException e) {
             throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to fetch " + url + " with Playwright", e);
-        }
-    }
-
-    private Browser launchBrowser(Playwright playwright) {
-        BrowserType.LaunchOptions baseOptions = new BrowserType.LaunchOptions()
-                .setHeadless(true)
-                .setArgs(List.of("--no-sandbox", "--disable-dev-shm-usage"));
-        try {
-            BrowserType.LaunchOptions edgeOptions = new BrowserType.LaunchOptions()
-                    .setHeadless(true)
-                    .setChannel("msedge")
-                    .setArgs(List.of("--no-sandbox", "--disable-dev-shm-usage"));
-            return playwright.chromium().launch(edgeOptions);
-        } catch (Exception ignored) {
-            return playwright.chromium().launch(baseOptions);
         }
     }
 

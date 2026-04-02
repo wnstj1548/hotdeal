@@ -4,6 +4,7 @@ import com.web.hotdeal.commons.config.CrawlerProperties;
 import com.web.hotdeal.crawler.model.CrawledDeal;
 import com.web.hotdeal.crawler.service.AbstractJsoupCrawler;
 import com.web.hotdeal.crawler.service.CrawlIncrementalService;
+import com.web.hotdeal.crawler.service.PlaywrightFetcher;
 import com.web.hotdeal.crawler.service.RobotsPolicyService;
 import com.web.hotdeal.crawler.support.CrawlerUtils;
 import com.web.hotdeal.deal.model.DealSource;
@@ -32,9 +33,10 @@ public class QuasarzoneCrawler extends AbstractJsoupCrawler {
     public QuasarzoneCrawler(
             CrawlerProperties crawlerProperties,
             CrawlIncrementalService crawlIncrementalService,
-            RobotsPolicyService robotsPolicyService
+            RobotsPolicyService robotsPolicyService,
+            PlaywrightFetcher playwrightFetcher
     ) {
-        super(crawlerProperties, crawlIncrementalService, robotsPolicyService);
+        super(crawlerProperties, crawlIncrementalService, robotsPolicyService, playwrightFetcher);
     }
 
     @Override

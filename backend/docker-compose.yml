@@ -14,6 +14,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/hotdeal
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms128m -Xmx320m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_DATABASE: 0
@@ -30,6 +31,9 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    mem_limit: ${APP_MEM_LIMIT:-512m}
+    memswap_limit: ${APP_MEMSWAP_LIMIT:-1g}
+    mem_swappiness: ${APP_MEM_SWAPPINESS:-60}
 
   postgres:
     image: postgres:17
@@ -48,6 +52,9 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    mem_limit: ${POSTGRES_MEM_LIMIT:-256m}
+    memswap_limit: ${POSTGRES_MEMSWAP_LIMIT:-512m}
+    mem_swappiness: ${POSTGRES_MEM_SWAPPINESS:-30}
 
   redis:
     image: redis:8
@@ -63,6 +70,9 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    mem_limit: ${REDIS_MEM_LIMIT:-128m}
+    memswap_limit: ${REDIS_MEMSWAP_LIMIT:-256m}
+    mem_swappiness: ${REDIS_MEM_SWAPPINESS:-20}
 
 volumes:
   postgres_data:

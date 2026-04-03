@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     mem_limit: ${APP_MEM_LIMIT:-512m}
     memswap_limit: ${APP_MEMSWAP_LIMIT:-1g}
-    mem_swappiness: ${APP_MEM_SWAPPINESS:-60}
+    mem_swappiness: 60
 
   postgres:
     image: postgres:17
@@ -45,7 +45,7 @@ services:
     restart: unless-stopped
     mem_limit: ${POSTGRES_MEM_LIMIT:-256m}
     memswap_limit: ${POSTGRES_MEMSWAP_LIMIT:-512m}
-    mem_swappiness: ${POSTGRES_MEM_SWAPPINESS:-30}
+    mem_swappiness: 30
 
   redis:
     image: redis:8
@@ -61,7 +61,7 @@ services:
     restart: unless-stopped
     mem_limit: ${REDIS_MEM_LIMIT:-128m}
     memswap_limit: ${REDIS_MEMSWAP_LIMIT:-256m}
-    mem_swappiness: ${REDIS_MEM_SWAPPINESS:-20}
+    mem_swappiness: 20
 
   caddy:
     image: caddy:2.10-alpine
@@ -79,7 +79,7 @@ services:
     restart: unless-stopped
     mem_limit: ${CADDY_MEM_LIMIT:-96m}
     memswap_limit: ${CADDY_MEMSWAP_LIMIT:-192m}
-    mem_swappiness: ${CADDY_MEM_SWAPPINESS:-10}
+    mem_swappiness: 10
 
 volumes:
   postgres_data:

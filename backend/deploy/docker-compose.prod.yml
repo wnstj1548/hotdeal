@@ -12,6 +12,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-hotdeal}
       DB_USERNAME: ${POSTGRES_USER:-hotdeal}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-change-this-postgres-password}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms128m -Xmx320m -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError}
       JPA_DDL_AUTO: ${JPA_DDL_AUTO:-update}
       CRAWLER_TIMEOUT_MS: ${CRAWLER_TIMEOUT_MS:-30000}
       CRAWLER_REQUEST_DELAY_MIN_MS: ${CRAWLER_REQUEST_DELAY_MIN_MS:-300}
@@ -23,6 +24,9 @@ services:
     expose:
       - "8080"
     restart: unless-stopped
+    mem_limit: ${APP_MEM_LIMIT:-512m}
+    memswap_limit: ${APP_MEMSWAP_LIMIT:-1g}
+    mem_swappiness: ${APP_MEM_SWAPPINESS:-60}
 
   postgres:
     image: postgres:17
@@ -39,6 +43,9 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    mem_limit: ${POSTGRES_MEM_LIMIT:-256m}
+    memswap_limit: ${POSTGRES_MEMSWAP_LIMIT:-512m}
+    mem_swappiness: ${POSTGRES_MEM_SWAPPINESS:-30}
 
   redis:
     image: redis:8
@@ -52,6 +59,9 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    mem_limit: ${REDIS_MEM_LIMIT:-128m}
+    memswap_limit: ${REDIS_MEMSWAP_LIMIT:-256m}
+    mem_swappiness: ${REDIS_MEM_SWAPPINESS:-20}
 
   caddy:
     image: caddy:2.10-alpine
@@ -67,6 +77,9 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
+    mem_limit: ${CADDY_MEM_LIMIT:-96m}
+    memswap_limit: ${CADDY_MEMSWAP_LIMIT:-192m}
+    mem_swappiness: ${CADDY_MEM_SWAPPINESS:-10}
 
 volumes:
   postgres_data:

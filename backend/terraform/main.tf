@@ -308,13 +308,14 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
         ]
         Resource = [
           "arn:${data.aws_partition.current.partition}:ssm:${var.aws_region}::document/AWS-RunShellScript",
-          "arn:${data.aws_partition.current.partition}:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/${aws_instance.app.id}"
+          "arn:${data.aws_partition.current.partition}:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*"
         ]
       },
       {
         Sid    = "SsmReadCommandResult"
         Effect = "Allow"
         Action = [
+          "ssm:DescribeInstanceInformation",
           "ssm:GetCommandInvocation",
           "ssm:ListCommandInvocations",
           "ssm:ListCommands"

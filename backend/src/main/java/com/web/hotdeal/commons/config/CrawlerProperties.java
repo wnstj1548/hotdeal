@@ -36,6 +36,7 @@ public class CrawlerProperties {
     private boolean robotsFailClosed = true;
     private int robotsTimeoutMs = 5_000;
     private long robotsCacheTtlMs = 3_600_000;
+    private long sourceTimeoutMs = 120_000;
 
     public Map<String, String> requestHeaders() {
         Map<String, String> headers = new LinkedHashMap<>();

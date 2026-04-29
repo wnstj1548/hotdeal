@@ -58,6 +58,7 @@ app:
     robots-fail-closed: ${CRAWLER_ROBOTS_FAIL_CLOSED:true}
     robots-timeout-ms: ${CRAWLER_ROBOTS_TIMEOUT_MS:5000}
     robots-cache-ttl-ms: ${CRAWLER_ROBOTS_CACHE_TTL_MS:3600000}
+    source-timeout-ms: ${CRAWLER_SOURCE_TIMEOUT_MS:120000}
   rate-limit:
     enabled: ${RATE_LIMIT_ENABLED:true}
     fail-open: ${RATE_LIMIT_FAIL_OPEN:true}

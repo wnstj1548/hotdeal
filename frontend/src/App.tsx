@@ -165,6 +165,14 @@ export default function App() {
 
   const readDealKeySet = useMemo(() => new Set(readDealKeys), [readDealKeys]);
 
+  const activeSourceLabel = useMemo(() => {
+    const selected = sourceOptions.find((item) => item.sourceType === source);
+    if (!selected) {
+      return "전체";
+    }
+    return `${selected.sourceLabel} · ${selected.totalDeals.toLocaleString()}건`;
+  }, [source, sourceOptions]);
+
   const onSubmitSearch = () => {
     setPage(0);
     setQuery(queryInput.trim());
@@ -223,81 +231,96 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_18%_18%,#dbeafe_0%,#eff6ff_35%,#fff7ed_70%,#ffffff_100%)] text-ink transition-colors dark:bg-[radial-gradient(circle_at_18%_18%,#172554_0%,#0f172a_42%,#111827_70%,#020617_100%)] dark:text-slate-100">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-10 sm:px-6">
-        <PageHeader themeMode={themeMode} onToggleTheme={onToggleTheme} />
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-ink)] transition-colors">
+      <div
+        className="min-h-screen"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, var(--app-grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--app-grid-line) 1px, transparent 1px)",
+          backgroundSize: "48px 48px"
+        }}
+      >
+        <div className="mx-auto w-full max-w-[1200px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+          <PageHeader
+            themeMode={themeMode}
+            onToggleTheme={onToggleTheme}
+            activeSourceLabel={activeSourceLabel}
+            totalDeals={deals.totalElements}
+            readCount={readDealKeys.length}
+          />
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-6 lg:h-fit">
-            <PopularChart
-              popularDeals={popularDeals}
-              popularLoading={popularLoading}
-              popularError={popularError}
-              popularLimit={popularLimit}
-              popularLimitOptions={POPULAR_LIMIT_OPTIONS}
-              onPopularLimitChange={setPopularLimit}
-            />
-          </aside>
+          <div className="mt-6 grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <aside className="xl:sticky xl:top-6 xl:h-fit">
+              <PopularChart
+                popularDeals={popularDeals}
+                popularLoading={popularLoading}
+                popularError={popularError}
+                popularLimit={popularLimit}
+                popularLimitOptions={POPULAR_LIMIT_OPTIONS}
+                onPopularLimitChange={setPopularLimit}
+              />
+            </aside>
 
-          <div>
-            <DealFiltersPanel
-              queryInput={queryInput}
-              onQueryInputChange={setQueryInput}
-              selectedCategory={selectedCategory}
-              categoryOptions={categoryOptions}
-              onSelectedCategoryChange={setSelectedCategory}
-              minPriceInput={minPriceInput}
-              onMinPriceInputChange={setMinPriceInput}
-              maxPriceInput={maxPriceInput}
-              onMaxPriceInputChange={setMaxPriceInput}
-              excludeEnded={excludeEnded}
-              onExcludeEndedChange={onExcludeEndedChange}
-              sort={sort}
-              sortOptions={SORT_OPTIONS}
-              onSortChange={onSortChange}
-              source={source}
-              sourceOptions={sourceOptions}
-              onSourceChange={onSourceChange}
-              query={query}
-              category={category}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              onSubmitSearch={onSubmitSearch}
-              onResetFilters={onResetFilters}
-            />
+            <div>
+              <DealFiltersPanel
+                queryInput={queryInput}
+                onQueryInputChange={setQueryInput}
+                selectedCategory={selectedCategory}
+                categoryOptions={categoryOptions}
+                onSelectedCategoryChange={setSelectedCategory}
+                minPriceInput={minPriceInput}
+                onMinPriceInputChange={setMinPriceInput}
+                maxPriceInput={maxPriceInput}
+                onMaxPriceInputChange={setMaxPriceInput}
+                excludeEnded={excludeEnded}
+                onExcludeEndedChange={onExcludeEndedChange}
+                sort={sort}
+                sortOptions={SORT_OPTIONS}
+                onSortChange={onSortChange}
+                source={source}
+                sourceOptions={sourceOptions}
+                onSourceChange={onSourceChange}
+                query={query}
+                category={category}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onSubmitSearch={onSubmitSearch}
+                onResetFilters={onResetFilters}
+              />
 
-            <main className="mt-6 space-y-3">
-              {loading && <DealsLoadingSkeleton />}
-              {error && !loading && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-950/40 dark:text-red-200">
-                  {error}
-                </div>
-              )}
-              {!loading && !error && deals.items.length === 0 && (
-                <div className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300">
-                  조건에 맞는 딜이 없습니다.
-                </div>
-              )}
-              {!loading && !error && deals.items.map((deal) => (
-                <DealCard
-                  key={deal.id}
-                  deal={deal}
-                  isRead={readDealKeySet.has(toReadDealKey(deal))}
-                  onRead={() => markDealAsRead(deal)}
-                />
-              ))}
-            </main>
+              <main className="mt-5 space-y-3">
+                {loading && <DealsLoadingSkeleton />}
+                {error && !loading && (
+                  <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-600/60 dark:bg-red-950/30 dark:text-red-200">
+                    {error}
+                  </div>
+                )}
+                {!loading && !error && deals.items.length === 0 && (
+                  <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-8 text-center text-sm text-[var(--app-muted)]">
+                    조건에 맞는 딜이 없습니다.
+                  </div>
+                )}
+                {!loading && !error && deals.items.map((deal) => (
+                  <DealCard
+                    key={deal.id}
+                    deal={deal}
+                    isRead={readDealKeySet.has(toReadDealKey(deal))}
+                    onRead={() => markDealAsRead(deal)}
+                  />
+                ))}
+              </main>
 
-            <DealsPagination
-              currentPage={deals.page}
-              totalPages={deals.totalPages}
-              hasNext={deals.hasNext}
-              loading={loading}
-              pageNumbers={pageNumbers}
-              onPrev={() => setPage((prev) => Math.max(prev - 1, 0))}
-              onPageSelect={setPage}
-              onNext={() => setPage((prev) => (deals.hasNext ? prev + 1 : prev))}
-            />
+              <DealsPagination
+                currentPage={deals.page}
+                totalPages={deals.totalPages}
+                hasNext={deals.hasNext}
+                loading={loading}
+                pageNumbers={pageNumbers}
+                onPrev={() => setPage((prev) => Math.max(prev - 1, 0))}
+                onPageSelect={setPage}
+                onNext={() => setPage((prev) => (deals.hasNext ? prev + 1 : prev))}
+              />
+            </div>
           </div>
         </div>
       </div>

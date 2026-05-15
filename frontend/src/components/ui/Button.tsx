@@ -32,26 +32,26 @@ export function Button({
 function variantBaseClasses(variant: ButtonVariant): string {
   switch (variant) {
     case "primary":
-      return "rounded-xl bg-skyline px-5 text-sm font-bold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500";
+      return "rounded-lg bg-[var(--app-accent)] px-5 text-sm font-semibold text-white hover:brightness-95";
     case "outline":
-      return "rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500";
+      return "rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] text-sm font-semibold text-[var(--app-ink)] hover:border-[var(--app-border-strong)]";
     case "chip":
       return "rounded-full border px-3 py-1 text-xs font-semibold";
     case "page":
-      return "h-8 min-w-8 rounded-lg border px-2 text-sm font-semibold";
+      return "h-8 min-w-8 rounded-md border px-2 text-sm font-semibold";
   }
 }
 
 function variantStateClasses(variant: ButtonVariant, active: boolean): string {
   if (variant === "chip") {
     return active
-      ? "border-accent bg-accent text-white dark:border-orange-400 dark:bg-orange-500"
-      : "border-slate-300 bg-white text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200";
+      ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
+      : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-ink)] hover:border-[var(--app-border-strong)]";
   }
   if (variant === "page") {
     return active
-      ? "border-skyline bg-skyline text-white dark:border-blue-500 dark:bg-blue-600"
-      : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500";
+      ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
+      : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-ink)] hover:border-[var(--app-border-strong)]";
   }
   return "";
 }

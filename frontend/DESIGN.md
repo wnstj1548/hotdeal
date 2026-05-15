@@ -1,0 +1,10 @@
+https://styles.refero.design/
+https://www.designmd.supply/
+https://designmd.ai/
+https://stitch.withgoogle.com/
+https://freedesignmd.com/
+https://designmd.app/
+https://opendesigner.io/showcase
+https://getdesign.md/
+https://www.designmd.supply/
+https://www.designmd.co/

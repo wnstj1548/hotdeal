@@ -6,9 +6,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#1f2937",
-        skyline: "#1e3a8a",
-        accent: "#f97316"
+        ink: "#1d1d1f",
+        body: "#1d1d1f",
+        primary: "#0066cc",
+        primaryFocus: "#0071e3",
+        primaryOnDark: "#2997ff",
+        canvas: "#ffffff",
+        parchment: "#f5f5f7",
+        pearl: "#fafafc",
+        tile1: "#272729",
+        tile2: "#2a2a2c",
+        tile3: "#252527",
+        hairline: "#e0e0e0",
+        dividerSoft: "#f0f0f0"
       }
     }
   },

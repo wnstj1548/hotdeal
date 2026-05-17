@@ -12,8 +12,7 @@ import {
   POPULAR_LIMIT_OPTIONS,
   READ_DEAL_STORAGE_KEY,
   REFRESH_MS,
-  SORT_OPTIONS,
-  THEME_STORAGE_KEY
+  SORT_OPTIONS
 } from "./constants";
 import type { DealItem, DealPage, DealSortOption, SourceSummary } from "./types";
 import { parsePriceInput, toReadDealKey } from "./utils/deal";
@@ -27,21 +26,6 @@ const EMPTY_PAGE: DealPage = {
   totalPages: 0,
   hasNext: false
 };
-
-type ThemeMode = "light" | "dark";
-
-function getInitialThemeMode(): ThemeMode {
-  if (typeof window === "undefined") {
-    return "light";
-  }
-
-  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (savedTheme === "light" || savedTheme === "dark") {
-    return savedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
 
 export default function App() {
   const [sources, setSources] = useState<SourceSummary[]>([]);
@@ -67,7 +51,6 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [popularError, setPopularError] = useState<string | null>(null);
   const [refreshTick, setRefreshTick] = useState(0);
-  const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialThemeMode);
 
   useEffect(() => {
     fetchSources()
@@ -127,16 +110,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.toggle("dark", themeMode === "dark");
-    root.style.colorScheme = themeMode;
-  }, [themeMode]);
-
-  useEffect(() => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
-  }, [themeMode]);
-
-  useEffect(() => {
     try {
       const raw = window.localStorage.getItem(READ_DEAL_STORAGE_KEY);
       if (!raw) {
@@ -163,15 +136,12 @@ export default function App() {
     return buildPageNumbers(deals.totalPages, deals.page, 7);
   }, [deals.page, deals.totalPages]);
 
-  const readDealKeySet = useMemo(() => new Set(readDealKeys), [readDealKeys]);
-
-  const activeSourceLabel = useMemo(() => {
+  const selectedSourceLabel = useMemo(() => {
     const selected = sourceOptions.find((item) => item.sourceType === source);
-    if (!selected) {
-      return "전체";
-    }
-    return `${selected.sourceLabel} · ${selected.totalDeals.toLocaleString()}건`;
+    return selected?.sourceLabel ?? "전체";
   }, [source, sourceOptions]);
+
+  const readDealKeySet = useMemo(() => new Set(readDealKeys), [readDealKeys]);
 
   const onSubmitSearch = () => {
     setPage(0);
@@ -212,10 +182,6 @@ export default function App() {
     setPage(0);
   };
 
-  const onToggleTheme = () => {
-    setThemeMode((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
   const markDealAsRead = (deal: DealItem) => {
     const key = toReadDealKey(deal);
     setReadDealKeys((prev) => {
@@ -231,99 +197,134 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-ink)] transition-colors">
-      <div
-        className="min-h-screen"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, var(--app-grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--app-grid-line) 1px, transparent 1px)",
-          backgroundSize: "48px 48px"
-        }}
-      >
-        <div className="mx-auto w-full max-w-[1200px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-          <PageHeader
-            themeMode={themeMode}
-            onToggleTheme={onToggleTheme}
-            activeSourceLabel={activeSourceLabel}
-            totalDeals={deals.totalElements}
-            readCount={readDealKeys.length}
-          />
+    <div className="min-h-screen bg-parchment text-ink">
+      <header className="sticky top-0 z-40 h-11 bg-black">
+        <div className="mx-auto flex h-full w-full max-w-[1440px] items-center justify-between px-4 sm:px-6">
+          <nav className="flex items-center gap-5 text-[12px] text-white/85">
+            <span className="apple-tight text-[14px] font-semibold text-white">Hotdeal</span>
+            <a href="#popular" className="transition-colors hover:text-white">인기 차트</a>
+            <a href="#deals" className="transition-colors hover:text-white">딜 목록</a>
+          </nav>
+          <div className="flex items-center gap-4 text-[12px] text-white/75">
+            <span>검색</span>
+            <span>계정</span>
+          </div>
+        </div>
+      </header>
 
-          <div className="mt-6 grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-            <aside className="xl:sticky xl:top-6 xl:h-fit">
-              <PopularChart
-                popularDeals={popularDeals}
-                popularLoading={popularLoading}
-                popularError={popularError}
-                popularLimit={popularLimit}
-                popularLimitOptions={POPULAR_LIMIT_OPTIONS}
-                onPopularLimitChange={setPopularLimit}
-              />
-            </aside>
-
-            <div>
-              <DealFiltersPanel
-                queryInput={queryInput}
-                onQueryInputChange={setQueryInput}
-                selectedCategory={selectedCategory}
-                categoryOptions={categoryOptions}
-                onSelectedCategoryChange={setSelectedCategory}
-                minPriceInput={minPriceInput}
-                onMinPriceInputChange={setMinPriceInput}
-                maxPriceInput={maxPriceInput}
-                onMaxPriceInputChange={setMaxPriceInput}
-                excludeEnded={excludeEnded}
-                onExcludeEndedChange={onExcludeEndedChange}
-                sort={sort}
-                sortOptions={SORT_OPTIONS}
-                onSortChange={onSortChange}
-                source={source}
-                sourceOptions={sourceOptions}
-                onSourceChange={onSourceChange}
-                query={query}
-                category={category}
-                minPrice={minPrice}
-                maxPrice={maxPrice}
-                onSubmitSearch={onSubmitSearch}
-                onResetFilters={onResetFilters}
-              />
-
-              <main className="mt-5 space-y-3">
-                {loading && <DealsLoadingSkeleton />}
-                {error && !loading && (
-                  <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-600/60 dark:bg-red-950/30 dark:text-red-200">
-                    {error}
-                  </div>
-                )}
-                {!loading && !error && deals.items.length === 0 && (
-                  <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-8 text-center text-sm text-[var(--app-muted)]">
-                    조건에 맞는 딜이 없습니다.
-                  </div>
-                )}
-                {!loading && !error && deals.items.map((deal) => (
-                  <DealCard
-                    key={deal.id}
-                    deal={deal}
-                    isRead={readDealKeySet.has(toReadDealKey(deal))}
-                    onRead={() => markDealAsRead(deal)}
-                  />
-                ))}
-              </main>
-
-              <DealsPagination
-                currentPage={deals.page}
-                totalPages={deals.totalPages}
-                hasNext={deals.hasNext}
-                loading={loading}
-                pageNumbers={pageNumbers}
-                onPrev={() => setPage((prev) => Math.max(prev - 1, 0))}
-                onPageSelect={setPage}
-                onNext={() => setPage((prev) => (deals.hasNext ? prev + 1 : prev))}
-              />
-            </div>
+      <div className="sticky top-11 z-30 border-b border-black/5 bg-[rgba(245,245,247,0.8)] backdrop-blur">
+        <div className="mx-auto flex h-[52px] w-full max-w-[1440px] items-center justify-between px-4 sm:px-6">
+          <p className="apple-display text-[21px] font-semibold leading-none text-ink">핫딜</p>
+          <div className="flex items-center gap-4 text-[14px] text-[#6e6e73]">
+            <span className="hidden sm:inline">소스 {selectedSourceLabel}</span>
+            <a href="#popular" className="apple-focus-ring transition-colors hover:text-primary">인기</a>
+            <a href="#deals" className="apple-focus-ring transition-colors hover:text-primary">목록</a>
+            <span className="rounded-full bg-primary px-3 py-1 text-[12px] text-white">
+              {deals.totalElements.toLocaleString()}개
+            </span>
           </div>
         </div>
       </div>
+
+      <PageHeader />
+
+      <section id="popular" className="bg-tile1 py-14 sm:py-16">
+        <div className="mx-auto grid w-full max-w-[1200px] gap-6 px-4 sm:px-6 lg:grid-cols-[300px_minmax(0,1fr)]">
+          <aside className="lg:sticky lg:top-[124px] lg:h-fit">
+            <p className="apple-tight text-[14px] font-semibold text-primaryOnDark">Trending Deals</p>
+            <h2 className="apple-display mt-2 text-[34px] font-semibold leading-[1.15] text-white">
+              지금 가장 많이 보는 딜
+            </h2>
+            <p className="mt-3 text-[17px] leading-[1.47] text-[#cccccc]">
+              최근 3시간 조회수를 기준으로 실시간 인기 순위를 제공합니다.
+            </p>
+          </aside>
+          <PopularChart
+            popularDeals={popularDeals}
+            popularLoading={popularLoading}
+            popularError={popularError}
+            popularLimit={popularLimit}
+            popularLimitOptions={POPULAR_LIMIT_OPTIONS}
+            onPopularLimitChange={setPopularLimit}
+          />
+        </div>
+      </section>
+
+      <section id="deals" className="bg-canvas py-14 sm:py-16">
+        <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
+          <h2 className="apple-display text-[40px] font-semibold leading-[1.1] text-ink">전체 딜 탐색</h2>
+          <p className="mt-2 text-[17px] text-[#6e6e73]">
+            총 {deals.totalElements.toLocaleString()}개의 딜을 조건별로 필터링해 확인할 수 있습니다.
+          </p>
+
+          <div className="mt-8">
+            <DealFiltersPanel
+              queryInput={queryInput}
+              onQueryInputChange={setQueryInput}
+              selectedCategory={selectedCategory}
+              categoryOptions={categoryOptions}
+              onSelectedCategoryChange={setSelectedCategory}
+              minPriceInput={minPriceInput}
+              onMinPriceInputChange={setMinPriceInput}
+              maxPriceInput={maxPriceInput}
+              onMaxPriceInputChange={setMaxPriceInput}
+              excludeEnded={excludeEnded}
+              onExcludeEndedChange={onExcludeEndedChange}
+              sort={sort}
+              sortOptions={SORT_OPTIONS}
+              onSortChange={onSortChange}
+              source={source}
+              sourceOptions={sourceOptions}
+              onSourceChange={onSourceChange}
+              query={query}
+              category={category}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              onSubmitSearch={onSubmitSearch}
+              onResetFilters={onResetFilters}
+            />
+          </div>
+
+          <main className="mt-6 space-y-3">
+            {loading && <DealsLoadingSkeleton />}
+            {error && !loading && (
+              <div className="rounded-[11px] border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700">
+                {error}
+              </div>
+            )}
+            {!loading && !error && deals.items.length === 0 && (
+              <div className="rounded-[18px] border border-hairline bg-parchment px-4 py-8 text-center text-[14px] text-[#6e6e73]">
+                조건에 맞는 딜이 없습니다.
+              </div>
+            )}
+            {!loading && !error && deals.items.map((deal) => (
+              <DealCard
+                key={deal.id}
+                deal={deal}
+                isRead={readDealKeySet.has(toReadDealKey(deal))}
+                onRead={() => markDealAsRead(deal)}
+              />
+            ))}
+          </main>
+
+          <DealsPagination
+            currentPage={deals.page}
+            totalPages={deals.totalPages}
+            hasNext={deals.hasNext}
+            loading={loading}
+            pageNumbers={pageNumbers}
+            onPrev={() => setPage((prev) => Math.max(prev - 1, 0))}
+            onPageSelect={setPage}
+            onNext={() => setPage((prev) => (deals.hasNext ? prev + 1 : prev))}
+          />
+        </div>
+      </section>
+
+      <footer className="bg-parchment px-4 py-8 text-[12px] text-[#6e6e73] sm:px-6">
+        <div className="mx-auto w-full max-w-[1200px] border-t border-black/5 pt-4">
+          데이터는 2분 간격으로 자동 갱신됩니다.
+        </div>
+      </footer>
     </div>
   );
 }

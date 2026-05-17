@@ -72,13 +72,9 @@ export function DealFiltersPanel({
   };
 
   return (
-    <Panel className="border-[var(--app-border-strong)] p-4 sm:p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-[var(--app-ink)] sm:text-base">검색 필터</h2>
-      </div>
-
+    <Panel className="p-5 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px_130px_130px]">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Input
             value={queryInput}
             onChange={(event) => onQueryInputChange(event.target.value)}
@@ -107,16 +103,15 @@ export function DealFiltersPanel({
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t border-[var(--app-border)] pt-3">
-          <label className="inline-flex items-center gap-2 text-sm text-[var(--app-ink)]">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex items-center gap-2 text-[14px] text-ink">
             <Checkbox
               checked={excludeEnded}
               onChange={(event) => onExcludeEndedChange(event.target.checked)}
             />
             품절/종료 제외
           </label>
-
-          <label className="inline-flex items-center gap-2 text-sm text-[var(--app-ink)]">
+          <label className="inline-flex items-center gap-2 text-[14px] text-ink">
             정렬
             <Select
               uiSize="sm"
@@ -130,19 +125,18 @@ export function DealFiltersPanel({
               ))}
             </Select>
           </label>
-
           <div className="ml-auto flex gap-2">
             <Button
               variant="outline"
               onClick={onResetFilters}
-              className="h-10 px-4"
+              className="h-10 px-5"
             >
               초기화
             </Button>
             <Button
               type="submit"
               variant="primary"
-              className="h-10"
+              className="h-10 px-5"
             >
               검색
             </Button>
@@ -150,7 +144,7 @@ export function DealFiltersPanel({
         </div>
       </form>
 
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--app-border)] pt-4">
+      <div className="mt-5 flex flex-wrap gap-2">
         {sourceOptions.map((item) => (
           <Button
             key={item.sourceType}
@@ -163,7 +157,7 @@ export function DealFiltersPanel({
         ))}
       </div>
 
-      <div className="mt-3 text-xs text-[var(--app-muted)]">
+      <div className="mt-4 border-t border-black/5 pt-3 text-[12px] text-[#6e6e73]">
         적용 필터:
         <span className="ml-1">
           {query ? `검색어 "${query}"` : "검색어 없음"}

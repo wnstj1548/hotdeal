@@ -19,7 +19,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "transition disabled:cursor-not-allowed disabled:opacity-40",
+        "apple-focus-ring inline-flex items-center justify-center whitespace-nowrap transition-transform duration-150 disabled:cursor-not-allowed disabled:opacity-40",
         variantBaseClasses(variant),
         variantStateClasses(variant, active),
         className
@@ -32,26 +32,26 @@ export function Button({
 function variantBaseClasses(variant: ButtonVariant): string {
   switch (variant) {
     case "primary":
-      return "rounded-lg bg-[var(--app-accent)] px-5 text-sm font-semibold text-white hover:brightness-95";
+      return "rounded-full bg-primary px-5 py-2.5 text-[15px] font-normal leading-none text-white hover:bg-[#005bb5] active:scale-95";
     case "outline":
-      return "rounded-lg border border-[var(--app-border)] bg-[var(--app-surface)] text-sm font-semibold text-[var(--app-ink)] hover:border-[var(--app-border-strong)]";
+      return "rounded-full border border-primary bg-transparent px-5 py-2.5 text-[15px] font-normal leading-none text-primary hover:bg-primary/5 active:scale-95";
     case "chip":
-      return "rounded-full border px-3 py-1 text-xs font-semibold";
+      return "rounded-full border px-3 py-1.5 text-xs font-normal leading-none";
     case "page":
-      return "h-8 min-w-8 rounded-md border px-2 text-sm font-semibold";
+      return "h-8 min-w-8 rounded-lg border px-2 text-[13px] font-normal leading-none";
   }
 }
 
 function variantStateClasses(variant: ButtonVariant, active: boolean): string {
   if (variant === "chip") {
     return active
-      ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
-      : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-ink)] hover:border-[var(--app-border-strong)]";
+      ? "border-primary bg-primary text-white active:scale-95"
+      : "border-hairline bg-canvas text-ink hover:border-[#c4c4c6]";
   }
   if (variant === "page") {
     return active
-      ? "border-[var(--app-accent)] bg-[var(--app-accent)] text-white"
-      : "border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-ink)] hover:border-[var(--app-border-strong)]";
+      ? "border-primary bg-primary text-white active:scale-95"
+      : "border-hairline bg-canvas text-ink hover:border-[#c4c4c6]";
   }
   return "";
 }

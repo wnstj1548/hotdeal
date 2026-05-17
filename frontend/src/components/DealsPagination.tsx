@@ -23,8 +23,8 @@ export function DealsPagination({
   onNext
 }: DealsPaginationProps) {
   return (
-    <Panel as="footer" className="mt-5 px-4 py-3">
-      <p className="mb-3 text-sm text-[var(--app-muted)]">
+    <Panel as="footer" className="mt-6 px-4 py-4 sm:px-5">
+      <p className="mb-3 text-[14px] text-[#6e6e73]">
         페이지 {currentPage + 1} / {Math.max(totalPages, 1)}
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -32,7 +32,7 @@ export function DealsPagination({
           variant="outline"
           onClick={onPrev}
           disabled={currentPage <= 0 || loading}
-          className="px-3 py-1.5"
+          className="h-8 rounded-lg px-3 py-1.5 text-[13px]"
         >
           이전
         </Button>
@@ -51,7 +51,7 @@ export function DealsPagination({
           variant="primary"
           onClick={onNext}
           disabled={!hasNext || loading}
-          className="px-3 py-1.5 text-sm font-semibold"
+          className="h-8 rounded-lg px-3 py-1.5 text-[13px]"
         >
           다음
         </Button>

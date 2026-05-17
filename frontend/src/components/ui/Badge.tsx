@@ -13,7 +13,7 @@ export function Badge({ variant = "neutral", size = "md", className, ...props }:
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md font-semibold",
+        "inline-flex items-center rounded-full font-normal",
         sizeClasses(size),
         variantClasses(variant),
         className
@@ -25,20 +25,20 @@ export function Badge({ variant = "neutral", size = "md", className, ...props }:
 
 function sizeClasses(size: BadgeSize): string {
   if (size === "sm") {
-    return "px-1.5 py-0.5 text-[10px]";
+    return "px-2 py-1 text-[10px] leading-none";
   }
-  return "px-2 py-1 text-[11px]";
+  return "px-2.5 py-1 text-[11px] leading-none";
 }
 
 function variantClasses(variant: BadgeVariant): string {
   switch (variant) {
     case "skyline":
-      return "bg-[var(--app-accent)] text-white";
+      return "bg-primary text-white";
     case "success":
-      return "bg-emerald-600 text-white";
+      return "border border-primary/30 bg-primary/10 text-primary";
     case "neutral":
-      return "bg-[var(--app-surface-muted)] text-[var(--app-ink)]";
+      return "bg-parchment text-ink";
     case "warning":
-      return "bg-amber-500/90 text-white";
+      return "bg-ink text-white";
   }
 }

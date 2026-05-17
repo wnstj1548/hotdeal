@@ -22,10 +22,10 @@ export function PopularChart({
 }: PopularChartProps) {
   return (
     <Panel className="overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[var(--app-border)] bg-[var(--app-surface-muted)] px-4 py-3 sm:px-5">
+      <div className="flex items-center justify-between border-b border-black/5 px-4 py-3 sm:px-5">
         <div>
-          <h2 className="text-sm font-bold text-[var(--app-ink)] sm:text-base">인기 차트</h2>
-          <p className="text-xs text-[var(--app-muted)]">최근 3시간 조회수 TOP {popularLimit}</p>
+          <h2 className="apple-tight text-[17px] font-semibold text-ink">인기 차트</h2>
+          <p className="text-[12px] text-[#6e6e73]">최근 3시간 조회수 TOP {popularLimit}</p>
         </div>
         <Select
           uiSize="sm"
@@ -43,12 +43,12 @@ export function PopularChart({
       <div className="max-h-[min(72vh,820px)] overflow-y-auto p-4 sm:p-5">
         {popularLoading && <PopularLoadingSkeleton />}
         {popularError && !popularLoading && (
-          <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-600/60 dark:bg-red-950/30 dark:text-red-200">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-700">
             {popularError}
           </div>
         )}
         {!popularLoading && !popularError && popularDeals.length === 0 && (
-          <div className="rounded-lg border border-[var(--app-border)] bg-[var(--app-surface-muted)] px-4 py-8 text-center text-sm text-[var(--app-muted)]">
+          <div className="rounded-[11px] border border-hairline bg-parchment px-4 py-8 text-center text-[14px] text-[#6e6e73]">
             최근 3시간 인기 딜이 없습니다.
           </div>
         )}
@@ -60,16 +60,16 @@ export function PopularChart({
                   href={deal.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="group grid grid-cols-[34px_1fr] gap-2 rounded-md border border-[var(--app-border)] px-3 py-3 transition hover:border-[var(--app-border-strong)] hover:bg-[var(--app-surface-muted)]"
+                  className="group grid grid-cols-[34px_1fr] gap-2 rounded-[11px] border border-hairline px-3 py-3 transition hover:border-[#c4c4c6] hover:bg-parchment"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-[var(--app-accent)] text-xs font-extrabold text-white">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white">
                     {index + 1}
                   </div>
                   <div>
-                    <p className="line-clamp-2 text-[13px] font-semibold text-[var(--app-ink)] transition group-hover:text-[var(--app-accent)]">
+                    <p className="line-clamp-2 text-[13px] font-semibold text-ink transition group-hover:text-primary">
                       {deal.title}
                     </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-[var(--app-muted)]">
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-[#6e6e73]">
                       <Badge variant="skyline" size="sm">{deal.sourceLabel}</Badge>
                       <Badge size="sm">조회 {deal.viewCount ?? 0}</Badge>
                     </div>
@@ -88,7 +88,7 @@ function PopularLoadingSkeleton() {
   return (
     <div className="space-y-2">
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="h-[64px] animate-pulse rounded-md border border-[var(--app-border)] bg-[var(--app-surface-muted)]" />
+        <div key={index} className="h-[64px] animate-pulse rounded-[11px] border border-hairline bg-parchment" />
       ))}
     </div>
   );

@@ -11,7 +11,7 @@ export function Select({ uiSize = "md", className, children, ...props }: SelectP
   return (
     <select
       className={cn(
-        "border border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-ink)] outline-none transition focus:border-[var(--app-accent)]",
+        "apple-focus-ring border border-black/10 bg-canvas outline-none transition focus:border-primary",
         sizeClasses(uiSize),
         className
       )}
@@ -24,7 +24,7 @@ export function Select({ uiSize = "md", className, children, ...props }: SelectP
 
 function sizeClasses(size: SelectSize): string {
   if (size === "sm") {
-    return "h-8 rounded-md px-2 text-xs";
+    return "h-8 rounded-lg px-2 text-xs text-ink";
   }
-  return "h-10 rounded-lg px-3 text-sm focus:ring-2 focus:ring-[var(--app-focus)]";
+  return "h-11 rounded-full px-4 text-[15px] text-ink";
 }

@@ -8,7 +8,7 @@ export function Checkbox({ className, ...props }: CheckboxProps) {
     <input
       type="checkbox"
       className={cn(
-        "h-4 w-4 rounded border-[var(--app-border)] bg-[var(--app-surface)] text-[var(--app-accent)] focus:ring-[var(--app-accent)]",
+        "h-4 w-4 rounded border-black/20 bg-canvas text-primary focus:ring-primary",
         className
       )}
       {...props}
